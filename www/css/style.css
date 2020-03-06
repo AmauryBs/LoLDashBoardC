@@ -1,0 +1,26 @@
+#line{
+    display: flex;
+}
+
+h1{
+    text-align: center;
+    font-size: 22;
+    font-family: sans-serif;
+    color: white;
+    border:4px;
+}
+
+#container{
+    background-color: lightgrey;
+    display: inline-block;
+    border-style: solid;
+    border-color: #870106;
+}
+.content{
+    border-style: solid;
+    border-color: #870106;
+}
+
+body{
+    background-color: #870106;
+}
