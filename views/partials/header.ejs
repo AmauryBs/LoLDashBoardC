@@ -1,0 +1,29 @@
+<!-- views/partials/header.ejs -->
+
+
+<nav class="navbar navbar-default" role="navigation">
+    <div class="container-fluid">
+        
+        <div class="navbar-header">
+            <a class="navbar-brand" href="/">
+                <span class="glyphicon glyphicon-fire"></span>
+                LoL Dashboard
+            </a>
+    
+            <ul class="nav navbar-nav">
+                <li><a href="/about">About</a></li>
+            </ul>
+            <form id="searchForm"class="navbar-form navbar-left" method="Post" action="/summonerPage" >
+                <div class="form-group">
+                  <input type="text" name="username" maxlength="17" class="form-control" placeholder="Summoner name">
+                </div>
+                <button type="submit" class="btn btn-default">Submit</button>
+            </form>
+            <ul class="nav navbar-nav">
+                <li><a id="test">username: </a></li>
+
+            </ul>  
+        </div>
+    
+    </div>
+    </nav>
