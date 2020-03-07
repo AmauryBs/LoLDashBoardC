@@ -4,23 +4,106 @@
 <html lang="en">
 <head>
     <%- include ('../partials/head') %>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
 </head>
 <body class="container">
 
 <header>
     <%- include ('../partials/header') %>
+    <script>
+        document.getElementById("test").append( '<%= name %>')
+    </script>
 </header>
 
 <main>
+    
     <div class="jumbotron">
-        <h1>This is great but I don't know what to do now</h1>
-        <p>Welcome to my trashsite <%= username %></p>
-        <script>
-            document.getElementById("test").append( '<%= username %>')
-        </script>
+        <table class="table table-bordered table-striped">
+            <tbody id="myTable">
+                <tr>
+                    <td>name</td>
+                    <td><%= name %></td>
+                </tr>
+                <tr>
+                    <td>profileIcon</td>
+                    <td><img src= "http://ddragon.leagueoflegends.com/cdn/10.5.1/img/profileicon/<%= profileIconId %>.png"></td>
+                </tr>
+                <tr>
+                    <td>Level</td>
+                    <td><%= summonerLevel%></td>
+                </tr>
+            </tbody>
+        </table>
 
+        <div class="panel-group">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title"></h4>
+                  <a data-toggle="collapse" href="#collapse1"><%=ranked[0].queueType.replace("_", " ")%>:</a>
+                </h4>
+              </div>
+              <div id="collapse1" class="panel-collapse collapse">
+                <div class="panel-body">
+                    <table class="table table-bordered table-striped">
+                        <tbody id="ranked0">
+                            <tr>
+                                <td>hotstreak</td>
+                                <td><%=ranked[0].hotstreak%></td>
+                            </tr>
+                            <tr>
+                                <td>wins</td>
+                                <td><%=ranked[0].wins%></td>
+                            </tr>
+                            <tr>
+                                <td>losses</td>
+                                <td><%=ranked[0].losses%></td>
+                            </tr>
+                            <tr>
+                                <td>rank</td>
+                                <td><%= ranked[0].tier%> <%=ranked[0].rank%> : <%=ranked[0].leaguePoints%> lp</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+              </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                  <h4 class="panel-title"></h4>
+                    <a data-toggle="collapse" href="#collapse2"><%=ranked[1].queueType.replace("_", " ") %>:</a>
+                  </h4>
+                </div>
+                <div id="collapse2" class="panel-collapse collapse">
+                  <div class="panel-body">
+                      <table class="table table-bordered table-striped">
+                          <tbody id="ranked0">
+                              <tr>
+                                  <td>hotstreak</td>
+                                  <td><%=ranked[1].hotstreak%></td>
+                              </tr>
+                              <tr>
+                                  <td>wins</td>
+                                  <td><%=ranked[1].wins%></td>
+                              </tr>
+                              <tr>
+                                  <td>losses</td>
+                                  <td><%=ranked[1].losses%></td>
+                              </tr>
+                              <tr>
+                                  <td>rank</td>
+                                  <td><%= ranked[1].tier%> <%=ranked[1].rank%> : <%=ranked[1].leaguePoints%> lp</td>
+                              </tr>
+                          </tbody>
+                      </table>
+                  </div>
+                </div>
+              </div>
+          </div>
     </div>
 </main>
+
 <footer>
     <%- include ('../partials/footer') %>
 </footer>

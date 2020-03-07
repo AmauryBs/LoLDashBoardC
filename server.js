@@ -27,7 +27,7 @@ app.use('/views',express.static(__dirname+'/views/'));
 
 
 app.get('/summonerPage',function(req,res){
-  res.render('pages/summonerPage.ejs',{username:''});
+  res.render('pages/summonerPage.ejs',{name:'', summonerLevel:-1,profileIconId:-1});
 });
 
 app.post('/summonerPage',(req,res) => { 
