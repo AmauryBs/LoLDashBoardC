@@ -4,36 +4,62 @@ request=require('request')
 
 
 function generateHTML(req, res) {
+if(req.body.name ==''){
+  console.log('empty name')
+  res.render('pages/summonerPage', {'request':request});
+  return;
+}
 requestProfile(req.body.name, function(result){
+  if (result != 'undefined'){
+    var id = result.id
+    var data = result
+  }else{
+    console.log('cannot find summoner')
+    res.render('pages/summonerPage',{'request':request});
+    return;
+  }
   
-  var id = result.id
-  var data = result
-  requestRanked(id, function(result){
-    var obj = Object.assign(data, {'ranked':result})
-    console.log(obj)
-    res.render('pages/summonerPage',obj);
+  requestRanked(id, function(ranked){
+    if (ranked != 'undefined'){
+      data = Object.assign({'account': data}, {'ranked':ranked})
+    }
+    in_game(id, function(game){
+      if (game != 'undefined'){
+        gameType(game.gameQueueConfigId, function(queue){
+          if(queue!=''){
+            game.gameQueueConfigId = queue
+            console.log(game.gameQueueConfigId)
+          }
+          data = Object.assign(data, {'in_game':game})
+          console.log(data)
+          data = Object.assign(data, {'request':request})
+          res.render('pages/summonerPage',data);
+        })
+      }
+    });
   });
+  
 
 });
   }
 
 
 function requestProfile(name, callback){
-  url= encodeURI('https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/'+name+'?api_key=RGAPI-a53cf9ca-0bf1-4ab3-8b0a-dbf1bbed07e8');
+  url= encodeURI('https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/'+name+'?api_key=' + process.env.API_KEY);
   request(url, function (error, response, body) {
   if (!error && response.statusCode == 200) {
     
     var val= JSON.parse(body);
   }else{
-    var val =JSON.parse({name:'', summonerLevel:-1,profileIconId:-1});
+    var val ='undefined';
   }
   callback(val);
 });
 }
 
 function requestRanked(id, callback){
-  url= encodeURI('https://euw1.api.riotgames.com/lol/league/v4/entries/by-summoner/'+ id +'?api_key=RGAPI-a53cf9ca-0bf1-4ab3-8b0a-dbf1bbed07e8');
-  var val ={rank:'unranked'};
+  url= encodeURI('https://euw1.api.riotgames.com/lol/league/v4/entries/by-summoner/'+ id +'?api_key=' + process.env.API_KEY);
+  var val ='undefined';
   request(url, function (error, response, body) {
   if (!error && response.statusCode == 200) {
     var val= JSON.parse(body);
@@ -41,5 +67,37 @@ function requestRanked(id, callback){
   callback(val);
 });
 }
+
+function in_game(id,callback){
+  url= encodeURI('https://euw1.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/'+ id +'?api_key=' + process.env.API_KEY);
+  var val ='undefined';
+  request(url, function (error, response, body) {
+  if (!error && response.statusCode == 200) {
+    var val= JSON.parse(body);
+
+  }
+  callback(val);
+});
+}
+
+function gameType(idQueue, callback){
+  url= 'http://static.developer.riotgames.com/docs/lol/queues.json';
+  var res=''
+  request(url, function (error, response, body) {
+  if (!error && response.statusCode == 200) {
+      var val= JSON.parse(body);
+      val.forEach(function (item, index) {
+      
+        if (item.queueId == idQueue){
+            console.log(item.map)
+            res =item.map+", " + item.description
+          }
+      })
+    }
+    callback(res)
+  })
+}
+
+
 
   module.exports.generateHTML = generateHTML;
