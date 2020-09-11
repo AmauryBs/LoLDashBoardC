@@ -1,0 +1,19 @@
+.Blue{
+    background-color:#0080ff;
+    color:white !important;
+    font-size: 19px;
+}
+
+.Red{
+    background-color:#ff3333;
+    color:white;
+    font-size: 19px;
+
+}
+.color-change{
+    padding:0 !important;
+    width:50%
+}
+.inlineP{
+    display: inline-block;
+}

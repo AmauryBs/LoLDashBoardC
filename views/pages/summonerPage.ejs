@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="/css/summonerPage.css">
 </head>
 
 <% if (locals.in_game) { %>
@@ -45,8 +46,11 @@
                 var s = today.getSeconds();
                 md = checkTime(md);
                 sd = checkTime(sd);
-                document.getElementById("gamelength").innerHTML =
-                hd + ":" + md + ":" + sd;
+                timer = md + ":" + sd;
+                if (hd>0){
+                    timer = hd + ":" + md + ":" + sd;
+                }
+                document.getElementById("gamelength").innerHTML = timer
                 var t = setTimeout(startTime, 500);
                 }
                 function checkTime(i) {
@@ -65,16 +69,29 @@
                   <table class="table table-bordered table-striped">
                       <tbody id="in_game">
                           <tr>
-                              <td>game length</td>
-                              <td id='gamelength'></td>
+                              
+                              <td colspan=2 > &nbsp;<div class ="inlineP" id='gamelength'></div> &nbsp; | &nbsp; <%= in_game.gameQueueConfigId%></td>
                           </tr>
                           <tr>
-                              <td>Queue Type</td>
-                              <td ><%= in_game.gameQueueConfigId%></td>
-                          </tr>
-                          <tr>
-                              <td>participants</td>
-                              <td><%=in_game.participants %></td>
+                            <td class="color-change">
+                                <div class="Blue">
+                                    &nbsp;&nbsp; Blue
+                                </div>
+                            </td>
+                            <td class="color-change">
+                                <div class="Red">
+                                    &nbsp;&nbsp; Red
+                                </div>
+                            </td>
+                            <% teamSize= in_game.participants.length/2
+                            for (let i = 0; i < teamSize; i++) {%>
+                            <tr>
+                                <td> <%=in_game.participants[i].summonerName%> </td>
+                                <td> <%=in_game.participants[teamSize + i].summonerName%> </td>
+                            </tr>
+                            <%}%>
+
+                            </div>
                           </tr>
                       </tbody>
                   </table>

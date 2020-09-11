@@ -6,7 +6,7 @@ request=require('request')
 function generateHTML(req, res) {
 if(req.body.name ==''){
   console.log('empty name')
-  res.render('pages/summonerPage', {'request':request});
+  res.render('pages/summonerPage');
   return;
 }
 requestProfile(req.body.name, function(result){
@@ -14,27 +14,27 @@ requestProfile(req.body.name, function(result){
     var id = result.id
     var data = result
   }else{
-    console.log('cannot find summoner')
-    res.render('pages/summonerPage',{'request':request});
+  
+    console.log('cannot find summoner: ' + req.body.name)
+    res.render('pages/summonerPage');
     return;
   }
-  
+
   requestRanked(id, function(ranked){
     if (ranked != 'undefined'){
       data = Object.assign({'account': data}, {'ranked':ranked})
     }
     in_game(id, function(game){
-      if (game != 'undefined'){
+      if (game != 'undefined' && game!= undefined) {
         gameType(game.gameQueueConfigId, function(queue){
           if(queue!=''){
             game.gameQueueConfigId = queue
-            console.log(game.gameQueueConfigId)
           }
           data = Object.assign(data, {'in_game':game})
-          console.log(data)
-          data = Object.assign(data, {'request':request})
           res.render('pages/summonerPage',data);
         })
+      } else{
+        res.render('pages/summonerPage',data);
       }
     });
   });
@@ -90,14 +90,12 @@ function gameType(idQueue, callback){
       
         if (item.queueId == idQueue){
             console.log(item.map)
-            res =item.map+", " + item.description
+            res =item.map + ", " + item.description
           }
       })
     }
     callback(res)
   })
 }
-
-
 
   module.exports.generateHTML = generateHTML;
