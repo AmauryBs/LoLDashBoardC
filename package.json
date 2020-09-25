@@ -25,6 +25,7 @@
     "express-session": "^1.17.0",
     "express-validator": "^6.4.0",
     "html": "^1.0.0",
+    "mongoose": "^5.10.7",
     "request": "^2.88.2"
   }
 }

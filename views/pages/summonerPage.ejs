@@ -19,7 +19,7 @@
     <%- include ('../partials/header') %>
     <% if (locals.account) { %>
         <script>
-            document.getElementById("test").append( '<%= account.name %>')
+            document.getElementById("nameSpace").append( '<%= account.name %>')
         </script>
     <% } %>
 </header>
@@ -109,7 +109,7 @@
                 </tr>
                 <tr>
                     <td>profileIcon</td>
-                    <td><img src= "http://ddragon.leagueoflegends.com/cdn/10.5.1/img/profileicon/<%= account.profileIconId %>.png"></td>
+                    <td><img src= "http://ddragon.leagueoflegends.com/cdn/10.19.1/img/profileicon/<%= account.profileIconId %>.png"></td>
                 </tr>
                 <tr>
                     <td>Level</td>

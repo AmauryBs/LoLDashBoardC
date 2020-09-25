@@ -9,7 +9,15 @@ let fs = require('fs');
 let path = require('path');
 app.set('view engine', 'ejs');
 
+// Connection to mongo
+var mongoose = require('mongoose');
+var mongoDB = 'mongodb://127.0.0.1/my_database';
+mongoose.connect(mongoDB, { useNewUrlParser: true });
+var db = mongoose.connection;
+db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
+
+//Parser
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(bodyParser.json());
 app.use(cors());
@@ -26,6 +34,7 @@ app.use('/img',express.static(__dirname+'/www/img'));
 app.use('/views',express.static(__dirname+'/views/'));
 
 
+// redirections
 app.get('/summonerPage',function(req,res){
   res.render('pages/summonerPage.ejs',{name:'', summonerLevel:-1,profileIconId:-1});
 });
