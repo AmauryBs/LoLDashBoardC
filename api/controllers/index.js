@@ -4,6 +4,7 @@ request=require('request')
 
 
 function generateHTML(req, res) {
+  console.log(req.body)
 if(req.body.name ==''){
   console.log('empty name')
   res.render('pages/summonerPage');
@@ -58,7 +59,7 @@ function requestProfile(name, callback){
 }
 
 function requestRanked(id, callback){
-  url= encodeURI('https://euw1.api.riotgames.com/lol/league/v4/entries/by-summoner/'+ id +'?api_key=' + process.env.API_KEY);
+  url = encodeURI('https://euw1.api.riotgames.com/lol/league/v4/entries/by-summoner/'+ id +'?api_key=' + process.env.API_KEY);
   var val ='undefined';
   request(url, function (error, response, body) {
   if (!error && response.statusCode == 200) {
@@ -69,7 +70,7 @@ function requestRanked(id, callback){
 }
 
 function in_game(id,callback){
-  url= encodeURI('https://euw1.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/'+ id +'?api_key=' + process.env.API_KEY);
+  url = encodeURI('https://euw1.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/'+ id +'?api_key=' + process.env.API_KEY);
   var val ='undefined';
   request(url, function (error, response, body) {
   if (!error && response.statusCode == 200) {
@@ -81,7 +82,7 @@ function in_game(id,callback){
 }
 
 function gameType(idQueue, callback){
-  url= 'http://static.developer.riotgames.com/docs/lol/queues.json';
+  url = 'http://static.developer.riotgames.com/docs/lol/queues.json';
   var res=''
   request(url, function (error, response, body) {
   if (!error && response.statusCode == 200) {
@@ -98,4 +99,28 @@ function gameType(idQueue, callback){
   })
 }
 
-  module.exports.generateHTML = generateHTML;
+function gameHistory(accountId,queueId = -1, endIndex=20, callback){
+  if (queueId !=-1){
+    url= encodeURI('https://euw1.api.riotgames.com/lol/match/v4/matchlists/by-account/' + accountId + '?queue=' + queueId +'&endIndex='+ endIndex +'&api_key=' + process.env.API_KEY);
+  }
+  else{
+    url= encodeURI('https://euw1.api.riotgames.com/lol/match/v4/matchlists/by-account/' + accountId + '?endIndex='+ endIndex +'&api_key=' + process.env.API_KEY);
+  }
+  var res=''
+  request(url, function (error, response, body) {
+  if (!error && response.statusCode == 200) {
+      var val= JSON.parse(body);
+      val.forEach(function (item, index) {
+      
+        if (item.queueId == idQueue){
+            console.log(item.map)
+            res =item.map + ", " + item.description
+          }
+      })
+    }
+    callback(res)
+  })
+}
+
+
+module.exports.generateHTML = generateHTML;
