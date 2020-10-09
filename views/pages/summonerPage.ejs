@@ -2,230 +2,214 @@
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <%- include ('../partials/head') %>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../../js/summonerPage.js"></script>
     <link rel="stylesheet" href="/css/summonerPage.css">
 </head>
 
 <% if (locals.in_game) { %>
-<body class="container" onload="startTime()">
+
+<body class="container-fluid" onload="startTime()">
     <% }else{%>
-<body class="container" >
-    <%}%>
+
+    <body class="container-fluid">
+        <%}%>
 <header>
     <%- include ('../partials/header') %>
-    <% if (locals.account) { %>
-        <script>
-            document.getElementById("nameSpace").append( '<%= account.name %>')
-        </script>
-    <% } %>
-</header>
+        </header>
 
-<main>
-    
-    <div class="jumbotron">
-        <% if (locals.in_game) { %>
-        <script>
-            function startTime() {
-                var today = new Date();
-                var difference = today - new Date(<%=in_game.gameStartTime%>)
-                        var hd = Math.floor(difference/1000/60/60);
-                        difference -= hd*1000*60*60
+        <main>
 
-                        var md = Math.floor(difference/1000/60);
-                        difference -= md*1000*60
+            <div class="jumbotron">
+                <% if (locals.in_game) { %>
+                <script>
+                    function startTime() {
+                        var today = new Date();
+                        var difference = today - new Date(<%=in_game.gameStartTime %>)
+                        var hd = Math.floor(difference / 1000 / 60 / 60);
+                        difference -= hd * 1000 * 60 * 60
 
-                        var sd = Math.floor(difference/1000);
-                        
-                        
-                var h = today.getHours();
-                var m = today.getMinutes();
-                var s = today.getSeconds();
-                md = checkTime(md);
-                sd = checkTime(sd);
-                timer = md + ":" + sd;
-                if (hd>0){
-                    timer = hd + ":" + md + ":" + sd;
-                }
-                document.getElementById("gamelength").innerHTML = timer
-                var t = setTimeout(startTime, 500);
-                }
-                function checkTime(i) {
-                if (i < 10) {i = "0" + i};  // add zero in front of numbers < 10
-                return i;
-                }
-        </script>
-        <div class="panel panel-default">
-            <div class="panel-heading">
-              <h4 class="panel-title"></h4>
-                <a data-toggle="collapse" href="#collapseInGame">in game</a>
-              </h4>
-            </div>
-            <div id="collapseInGame" class="panel-collapse collapse">
-              <div class="panel-body">
-                  <table class="table table-bordered table-striped">
-                      <tbody id="in_game">
-                          <tr>
-                              
-                              <td colspan=2 > &nbsp;<div class ="inlineP" id='gamelength'></div> &nbsp; | &nbsp; <%= in_game.gameQueueConfigId%></td>
-                          </tr>
-                          <tr>
-                            <td class="color-change">
-                                <div class="Blue">
-                                    &nbsp;&nbsp; Blue
+                        var md = Math.floor(difference / 1000 / 60);
+                        difference -= md * 1000 * 60
+
+                        var sd = Math.floor(difference / 1000);
+
+
+                        var h = today.getHours();
+                        var m = today.getMinutes();
+                        var s = today.getSeconds();
+                        md = checkTime(md);
+                        sd = checkTime(sd);
+                        timer = md + ":" + sd;
+                        if (hd > 0) {
+                            timer = hd + ":" + md + ":" + sd;
+                        }
+                        document.getElementById("gamelength").innerHTML = timer
+                        var t = setTimeout(startTime, 500);
+                    }
+                    function checkTime(i) {
+                        if (i < 10) { i = "0" + i };  // add zero in front of numbers < 10
+                        return i;
+                    }
+                </script>
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h4 class="panel-title"></h4>
+                        <a data-toggle="collapse" href="#collapseInGame">in game</a>
+                        </h4>
+                    </div>
+                    <div id="collapseInGame" class="panel-collapse collapse">
+                        <div class="panel-body">
+                            <table class="table table-bordered table-striped">
+                                <tbody id="in_game">
+                                    <tr>
+
+                                        <td colspan=2> &nbsp;<div class="inlineP" id='gamelength'></div> &nbsp; | &nbsp;
+                                            <%= in_game.gameQueueConfigId%></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="color-change">
+                                            <div class="Blue">
+                                                &nbsp;&nbsp; Blue
+                                            </div>
+                                        </td>
+                                        <td class="color-change">
+                                            <div class="Red">
+                                                &nbsp;&nbsp; Red
+                                            </div>
+                                        </td>
+                                        <% teamSize= in_game.participants.length/2
+                                        for (let i = 0; i < teamSize; i++) {%>
+                                            <tr>
+                                                <td> <%=in_game.participants[i].summonerName%> </td>
+                                                <td> <%=in_game.participants[teamSize + i].summonerName%> </td>
+                                            </tr>
+                                        <%}%>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                <% } %>
+
+                <% if (locals.account) { %>
+                <section class="container-fluid account">
+                    
+                    <div class="row" >
+                        <div class="col-auto" id="colleftleft">
+                            <img class="profileIcon" src="http://ddragon.leagueoflegends.com/cdn/10.19.1/img/profileicon/<%= account.profileIconId %>.png">
+                            <span class="lvl"><%= account.summonerLevel%></span>
+                        </div>
+                        <div class="col-auto " id="colleftmiddle">
+                            <p>Summoner name : </p>
+                            <%= account.name %>
+
+                        </div>
+                        <div class="col"  id="colcenter">
+                            <span class="centerButtons ">
+                                <button type="button" class="btn btn-dark">Dark</button>
+                                <button type="button" class="btn btn-dark">Dark</button>
+                                <button type="button" class="btn btn-dark">Dark</button>
+                                <button type="button" class="btn btn-dark">Dark</button>
+                            </span>
+                        </div>
+                        <div class="col-auto" id="colright">
+                            <button type="button" class="btn btn-dark updateButton">UPDATE</button>
+                        </div>
+                    </div>
+                </section>
+                 <% } %>
+
+
+                <section class="container-fluid">
+                    <div class="row">
+                        <div class="col border border-dark">
+                            <article class="border-bottom border-dark">
+                                <div>
+                                    <% if (locals.ranked[0] && Object.keys(locals.ranked[0]).length !== 0 ) { %>
+                                        <%=ranked[0].queueType.replace("_", " ")%>
+                                    
+                                        <table class="table table-bordered table-striped">
+                                            <tbody id="ranked1">
+                                                <tr>
+                                                    <td>hotstreak</td>
+                                                    <td><%=ranked[0].hotStreak%>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>wins</td>
+                                                    <td><%=ranked[0].wins%></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>losses</td>
+                                                    <td><%=ranked[0].losses%></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>rank</td>
+                                                    <td><%= ranked[0].tier%>
+                                                        <%=ranked[0].rank%> :
+                                                        <%=ranked[0].leaguePoints%> lp
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
                                 </div>
-                            </td>
-                            <td class="color-change">
-                                <div class="Red">
-                                    &nbsp;&nbsp; Red
+                                <div>
+
+                                    <% if (locals.ranked[1] && Object.keys(locals.ranked[1]).length !== 0  ) { %>
+                                    <%=ranked[1].queueType.replace("_", " ")%>
+                                    <table class="table table-bordered table-striped">
+                                        <tbody id="ranked2">
+                                            <tr>
+                                                <td>hotstreak</td>
+                                                <td><%=ranked[1].hotStreak%></td>
+                                            </tr>
+                                            <tr>
+                                                <td>wins</td>
+                                                <td><%=ranked[1].wins%></td>
+                                            </tr>
+                                            <tr>
+                                                <td>losses</td>
+                                                <td><%=ranked[1].losses%></td>
+                                            </tr>
+                                            <tr>
+                                                <td>rank</td>
+                                                <td><%= ranked[1].tier%>
+                                                    <%=ranked[1].rank%> :
+                                                    <%=ranked[1].leaguePoints%> lp
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <% } %>
                                 </div>
-                            </td>
-                            <% teamSize= in_game.participants.length/2
-                            for (let i = 0; i < teamSize; i++) {%>
-                            <tr>
-                                <td> <%=in_game.participants[i].summonerName%> </td>
-                                <td> <%=in_game.participants[teamSize + i].summonerName%> </td>
-                            </tr>
-                            <%}%>
+                                <% } %>
+                            </article>
+                            <article>
+                                <p>Les joueurs avec qui il a le plus joué</p>
+                            </article>
 
-                            </div>
-                          </tr>
-                      </tbody>
-                  </table>
-              </div>
-            </div>
-          </div>
-          <% } %>
-        <% if (locals.account) { %>
 
-            <section class="container">
-                <div class="row"> 
-                    <div class="col">
-                        <img class="profileIcon" src= "http://ddragon.leagueoflegends.com/cdn/10.19.1/img/profileicon/<%= account.profileIconId %>.png">
-                        <span class="lvl"><%= account.summonerLevel%></span>
+                        </div>
+                        <div class="col-auto border border-dark">
+
+                        </div>
+                        <div class="col border border-dark">
+                            <p>Les champions avec qui il a le plus joué</p>
+                        </div>
                     </div>
-                    <div class="col">
-                        <p>Summoner name : </p>
-                        <%= account.name %>
-                        
-                    </div>
-                    <div class="col-6 ">
-                        <span class="centerButtons ">
-                            <button type="button" class="btn btn-dark">Dark</button>
-                            <button type="button" class="btn btn-dark">Dark</button>
-                            <button type="button" class="btn btn-dark">Dark</button>
-                            <button type="button" class="btn btn-dark">Dark</button>
-                        </span>
-                    </div>
-                    <div class="col ">
-                        <button type="button" class="btn btn-dark updateButton">UPDATE</button>
-                    </div>
-                </div>
-            </section>
-            <section class="container">
-                <div class="row">
+                </section>
+        </main>
 
-                </div>
-                
-            </section>
+        <footer>
+            <%- include ('../partials/footer') %>
+        </footer>
 
+    </body>
 
-
-       <!-- <table class="table table-bordered table-striped">
-            <tbody id="AccountTable">
-                <tr>
-                    <td>name</td>
-                    <td><%= account.name %></td>
-                </tr>
-                <tr>
-                    <td>profileIcon</td>
-                    <td><img src= "http://ddragon.leagueoflegends.com/cdn/10.19.1/img/profileicon/<%= account.profileIconId %>.png"></td>
-                </tr>
-                <tr>
-                    <td>Level</td>
-                    <td><%= account.summonerLevel%></td>
-                </tr>
-            </tbody>
-        </table>
-        <% } %>
-        <% if (locals.ranked) { %>
-        <div class="panel-group">
-            <div class="panel panel-default">
-              <div class="panel-heading">
-                <h4 class="panel-title"></h4>
-                  <a data-toggle="collapse" href="#collapseRanked1"><%=ranked[0].queueType.replace("_", " ")%>:</a>
-                </h4>
-              </div>
-              <div id="collapseRanked1" class="panel-collapse collapse">
-                <div class="panel-body">
-                    <table class="table table-bordered table-striped">
-                        <tbody id="ranked1">
-                            <tr>
-                                <td>hotstreak</td>
-                                <td><%=ranked[0].hotStreak%>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>wins</td>
-                                <td><%=ranked[0].wins%></td>
-                            </tr>
-                            <tr>
-                                <td>losses</td>
-                                <td><%=ranked[0].losses%></td>
-                            </tr>
-                            <tr>
-                                <td>rank</td>
-                                <td><%= ranked[0].tier%> <%=ranked[0].rank%> : <%=ranked[0].leaguePoints%> lp</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-              </div>
-            </div>
-            <% if (locals.ranked.length > 1) { %>
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                  <h4 class="panel-title"></h4>
-                    <a data-toggle="collapse" href="#collapseRanked2"><%=ranked[1].queueType.replace("_", " ") %>:</a>
-                  </h4>
-                </div>
-                <div id="collapseRanked2" class="panel-collapse collapse">
-                  <div class="panel-body">
-                      <table class="table table-bordered table-striped">
-                          <tbody id="ranked2">
-                              <tr>
-                                  <td>hotstreak</td>
-                                  <td><%=ranked[1].hotStreak%></td>
-                              </tr>
-                              <tr>
-                                  <td>wins</td>
-                                  <td><%=ranked[1].wins%></td>
-                              </tr>
-                              <tr>
-                                  <td>losses</td>
-                                  <td><%=ranked[1].losses%></td>
-                              </tr>
-                              <tr>
-                                  <td>rank</td>
-                                  <td><%= ranked[1].tier%> <%=ranked[1].rank%> : <%=ranked[1].leaguePoints%> lp</td>
-                              </tr>
-                          </tbody>
-                      </table>
-                  </div>
-                </div>
-              </div>
-          </div>-->
-              <% } %>
-        <% } %>
-    </div>
-</main>
-
-<footer>
-    <%- include ('../partials/footer') %>
-</footer>
-
-</body>
 </html>

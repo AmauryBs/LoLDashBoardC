@@ -10,6 +10,11 @@
     font-size: 19px;
 
 }
+
+.container-fluid-fluid
+{
+    max-width: 90%;
+}
 .color-change{
     padding:0 !important;
     width:50%
@@ -26,11 +31,12 @@
 
 .centerButtons
 {
-    display: block;   
-    margin: auto; 
-    margin-bottom: 50px;
-    margin-top: 50px;
-    
+    position: absolute;
+    bottom:50%;
+    /*left:50%;*/
+    /*transform: translate(0,-50%);
+    margin: auto;*/
+
 }
 
 .updateButton
@@ -44,8 +50,14 @@
 {
     position:absolute;        
     bottom:0;
-    left:50%;
-    transform: translate(-50%,45%);
+    left: 0;
+    transform: translate(0,45%);
+    padding-left: 75px;
+}
+
+.account
+{
+    margin-bottom: 2em;
 }
 
 
