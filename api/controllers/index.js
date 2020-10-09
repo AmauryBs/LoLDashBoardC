@@ -4,44 +4,41 @@ request=require('request')
 
 
 function generateHTML(req, res) {
-  console.log(req.body)
-if(req.body.name ==''){
-  console.log('empty name')
-  res.render('pages/summonerPage');
-  return;
-}
-requestProfile(req.body.name, function(result){
-  if (result != 'undefined'){
-    var id = result.id
-    var data = result
-  }else{
-  
-    console.log('cannot find summoner: ' + req.body.name)
+  if(req.body.name ==''){
+    console.log('empty name')
     res.render('pages/summonerPage');
     return;
   }
-
-  requestRanked(id, function(ranked){
-    if (ranked != 'undefined'){
-      data = Object.assign({'account': data}, {'ranked':ranked})
+  requestProfile(req.body.name, function(result){
+    if (result != 'undefined'){
+      var id = result.id
+      var data = result
+    }else{
+    
+      console.log('cannot find summoner: ' + req.body.name)
+      res.render('pages/summonerPage');
+      return;
     }
-    in_game(id, function(game){
-      if (game != 'undefined' && game!= undefined) {
-        gameType(game.gameQueueConfigId, function(queue){
-          if(queue!=''){
-            game.gameQueueConfigId = queue
-          }
-          data = Object.assign(data, {'in_game':game})
-          res.render('pages/summonerPage',data);
-        })
-      } else{
-        res.render('pages/summonerPage',data);
+
+    requestRanked(id, function(ranked){
+      if (ranked != 'undefined'){
+        data = Object.assign({'account': data}, {'ranked':ranked})
       }
+      in_game(id, function(game){
+        if (game != 'undefined' && game!= undefined) {
+          gameType(game.gameQueueConfigId, function(queue){
+            if(queue!=''){
+              game.gameQueueConfigId = queue
+            }
+            data = Object.assign(data, {'in_game':game})
+            res.render('pages/summonerPage',data);
+          })
+        } else{
+          res.render('pages/summonerPage',data);
+        }
+      });
     });
   });
-  
-
-});
   }
 
 
@@ -75,7 +72,6 @@ function in_game(id,callback){
   request(url, function (error, response, body) {
   if (!error && response.statusCode == 200) {
     var val= JSON.parse(body);
-
   }
   callback(val);
 });
@@ -99,28 +95,51 @@ function gameType(idQueue, callback){
   })
 }
 
-function gameHistory(accountId,queueId = -1, endIndex=20, callback){
+function gameHistory(queueId,accountId, endIndex,callback){
+
   if (queueId !=-1){
     url= encodeURI('https://euw1.api.riotgames.com/lol/match/v4/matchlists/by-account/' + accountId + '?queue=' + queueId +'&endIndex='+ endIndex +'&api_key=' + process.env.API_KEY);
   }
   else{
     url= encodeURI('https://euw1.api.riotgames.com/lol/match/v4/matchlists/by-account/' + accountId + '?endIndex='+ endIndex +'&api_key=' + process.env.API_KEY);
   }
-  var res=''
-  request(url, function (error, response, body) {
-  if (!error && response.statusCode == 200) {
-      var val= JSON.parse(body);
-      val.forEach(function (item, index) {
-      
-        if (item.queueId == idQueue){
-            console.log(item.map)
-            res =item.map + ", " + item.description
-          }
+  var val=''
+    request(url, function (error, response, body) {
+      if (!error && response.statusCode == 200) {
+        var val= JSON.parse(body);
+      }else{
+        console.log(body)  
+      }
+      callback(val)       
+    })
+  }
+
+function gameInfo(matchid, callback){
+  url= encodeURI('https://euw1.api.riotgames.com/lol/match/v4/matches/' + matchid + '?api_key=' + process.env.API_KEY);
+  var val=''
+    request(url, function (error, response, body) {
+      if (!error && response.statusCode == 200) {
+        var val= JSON.parse(body);
+      }else{
+        console.log(body)  
+      }
+      callback(val)
+    })
+  }
+
+function historyInfo(req, res){
+  gameHistory(req.body.queueId,req.body.accountId, req.body.endIndex,function(gameHisto){
+    history=[]
+    var bar = new Promise((resolve, reject) =>{ gameHisto.matches.forEach((element, index, array) => 
+        gameInfo(element.gameId,function(result){
+        history.push(result)
+        if (index === array.length -1) resolve();
       })
-    }
-    callback(res)
+      );});
+      bar.then(() => {res.json(history);});
   })
 }
 
 
 module.exports.generateHTML = generateHTML;
+module.exports.historyInfo = historyInfo
