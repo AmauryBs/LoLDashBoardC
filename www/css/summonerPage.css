@@ -17,3 +17,36 @@
 .inlineP{
     display: inline-block;
 }
+
+.profileIcon
+{
+    max-width: 150px;
+    max-height: 150px;
+}
+
+.centerButtons
+{
+    display: block;   
+    margin: auto; 
+    margin-bottom: 50px;
+    margin-top: 50px;
+    
+}
+
+.updateButton
+{
+    position:absolute;        
+    bottom:0;
+    right:0;
+
+}
+.lvl
+{
+    position:absolute;        
+    bottom:0;
+    left:50%;
+    transform: translate(-50%,45%);
+}
+
+
+

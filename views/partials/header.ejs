@@ -1,29 +1,28 @@
 <!-- views/partials/header.ejs -->
 
 
-<nav class="navbar navbar-default" role="navigation">
-    <div class="container-fluid">
-        
-        <div class="navbar-header">
-            <a class="navbar-brand" href="/">
-                <span class="glyphicon glyphicon-fire"></span>
-                LoL Dashboard
-            </a>
-    
-            <ul class="nav navbar-nav">
-                <li><a href="/about">About</a></li>
-            </ul>
-            <form id="searchForm"class="navbar-form navbar-left" method="Post" action="/summonerPage" >
-                <div class="form-group">
-                  <input type="text" name="name" maxlength="17" class="form-control" placeholder="Summoner name">
-                </div>
-                <button type="submit" class="btn btn-default">Submit</button>
-            </form>
-            <ul class="nav navbar-nav">
-                <li><a id="nameSpace">name: </a></li>
+<nav class="navbar navbar-expand-lg navbar-light bg-light" role="navigation">
+    <a class="navbar-brand" href="/">
+        <span class="glyphicon glyphicon-fire"></span>
+        LoL Dashboard
+    </a>
+    <div class="collapse navbar-collapse" id="">
 
-            </ul>  
-        </div>
-    
+        <ul class="nav navbar-nav">
+            <li><a class="nav-link" href="/about">About</a></li>
+        </ul>
+
+        <form id="searchForm" class="form-inline mx-auto" method="Post" action="/summonerPage">
+            <div class="form-group">
+                <input type="text" name="name" maxlength="17" class="form-control" placeholder="Summoner name">
+            </div>
+            <button type="submit" class="btn btn-outline-success my-2 my-sm-0">Submit</button>
+        </form>
+
+        <!--<ul class="nav navbar-nav">
+            <li><span class="" id="nameSpace">name: </span></li>
+
+        </ul>-->
     </div>
-    </nav>
+
+</nav>
