@@ -17,77 +17,87 @@ function generateHTML(req, res) {
     console.log('empty name')
     res.render('pages/summonerPage');
     return;
-  }
-  requestProfile(req.body.name, function(result){
-    if (result != 'undefined'){
-      var id = result.id
-      var data = result
-    }else{
-    
-      console.log('cannot find summoner: ' + req.body.name)
-      res.render('pages/summonerPage');
-      return;
-    }
-
-    requestRanked(id, function(ranked){
-      if (ranked != 'undefined'){
-        data = Object.assign({'account': data}, {'ranked':ranked})
-      }
-      in_game(id, function(game){
+  }  
+  models.Summoner.findOne({lowerName: req.body.name.toLowerCase()}, function (err, player){ 
+    if(player){
+      in_game(player.id, function(game){
         if (game != 'undefined' && game!= undefined) {
           gameType(game.gameQueueConfigId, function(queue){
             if(queue!=''){
               game.gameQueueConfigId = queue
             }
-            data = Object.assign(data, {'in_game':game})
-            res.render('pages/summonerPage',data);
+            player = Object.assign(player, {'in_game':game})
+            res.render('pages/summonerPage',player);
           })
         } else{
-          res.render('pages/summonerPage',data);
+          res.render('pages/summonerPage',player);
         }
       });
-    });
+    }else{
+      requestProfile(req.body.name, function(result){
+        if (result != 'undefined'){
+          var id = result.id
+          var data = result
+        }else{
+          console.log('cannot find summoner: ' + req.body.name)
+          res.render('pages/summonerPage');
+          return;
+        }
+        requestRanked(id, function(ranked){
+          if (ranked != 'undefined'){
+            data = Object.assign(data, {'ranked':ranked})
+            insertSummoner(data)
+          }
+          in_game(id, function(game){
+            if (game != 'undefined' && game!= undefined) {
+              gameType(game.gameQueueConfigId, function(queue){
+                if(queue!=''){
+                  game.gameQueueConfigId = queue
+                }
+                data = Object.assign(data, {'in_game':game})
+                res.render('pages/summonerPage',data);
+              })
+            } else{
+              res.render('pages/summonerPage',data);
+            }
+          });
+        });
+      })
+    }
   });
   }
 
-function insertSummoner(sumo){
+function insertSummoner(summo){
   const newSummoner = models.Summoner({
-    _id : sumo.id,
-    accountId : sumo.accountId,
-    profileIconId : sumo.profileIconId,
-    revisionDate : sumo.revisionDate,
-    name : sumo.name,
-    lowerName : sumo.name.toLowerCase(),
-    summonerLevel: sumo.summonerLevel,
-    lastUpdate : new Date()
+    _id : summo.id,
+    accountId : summo.accountId,
+    profileIconId : summo.profileIconId,
+    revisionDate : summo.revisionDate,
+    name : summo.name,
+    lowerName : summo.name.toLowerCase(),
+    summonerLevel: summo.summonerLevel,
+    lastUpdate : new Date(),
+    ranked : summo.ranked
   })
+
   newSummoner.save(function(err){
     if (err) throw err;
-    console.log(sumo.name + ":inserted")
+    console.log(summo.name + " inserted")
   })
 }
 
 function requestProfile(playerName, callback){
-  models.Summoner.findOne({lowerName: playerName.toLowerCase()}, function (err, player){ 
-    if(player){
-      //document exists
-      callback(player)
-    }else{
-      console.log(err)
       url= encodeURI('https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/'+playerName);
       request({'url': url, 'headers': headers}, function (error, response, body) {
       if (!error && response.statusCode == 200) {
         
         var val= JSON.parse(body);
-        insertSummoner(val)
       }else{
         var val ='undefined';
       }
       callback(val);
     }); 
   }
-});
-}
 
 function requestRanked(id, callback){
   url = encodeURI('https://euw1.api.riotgames.com/lol/league/v4/entries/by-summoner/'+ id);

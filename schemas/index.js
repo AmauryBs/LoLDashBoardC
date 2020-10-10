@@ -10,7 +10,19 @@ const SummonerSchema = new Schema({
   lowerName:{ type: String, lowercase: true},
   summonerLevel: mongoose.Number,
   GamesIdList : [mongoose.Number],
-  lastUpdate : mongoose.Number
+  lastUpdate : mongoose.Number,
+  ranked : [{
+    queueType: String,
+    tier: String,
+    rank: String,
+    leaguePoints: mongoose.Number,
+    wins: mongoose.Number,
+    losses: mongoose.Number,
+    veteran: Boolean,
+    inactive: Boolean,
+    freshBlood: Boolean,
+    hotStreak: Boolean
+  }]
 },{ _id: false });
 
 
