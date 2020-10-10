@@ -7,6 +7,7 @@ const SummonerSchema = new Schema({
   profileIconId : mongoose.Number,
   revisionDate : mongoose.Number,
   name : String,
+  lowerName:{ type: String, lowercase: true},
   summonerLevel: mongoose.Number,
   GamesIdList : [mongoose.Number],
   lastUpdate : mongoose.Number

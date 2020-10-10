@@ -1,5 +1,6 @@
 const { Template } = require('ejs');
 const { version } = require('mongoose');
+const models = require('../../schemas');
 
 require('dotenv').config()
 request=require('request')
@@ -49,17 +50,42 @@ function generateHTML(req, res) {
   });
   }
 
+function insertSummoner(sumo){
+  const newSummoner = models.Summoner({
+    _id : sumo.id,
+    accountId : sumo.accountId,
+    profileIconId : sumo.profileIconId,
+    revisionDate : sumo.revisionDate,
+    name : sumo.name,
+    lowerName : sumo.name.toLowerCase(),
+    summonerLevel: sumo.summonerLevel,
+    lastUpdate : new Date()
+  })
+  newSummoner.save(function(err){
+    if (err) throw err;
+    console.log(sumo.name + ":inserted")
+  })
+}
 
-function requestProfile(name, callback){
-  url= encodeURI('https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/'+name);
-  request({'url': url, 'headers': headers}, function (error, response, body) {
-  if (!error && response.statusCode == 200) {
-    
-    var val= JSON.parse(body);
-  }else{
-    var val ='undefined';
+function requestProfile(playerName, callback){
+  models.Summoner.findOne({lowerName: playerName.toLowerCase()}, function (err, player){ 
+    if(player){
+      //document exists
+      callback(player)
+    }else{
+      console.log(err)
+      url= encodeURI('https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/'+playerName);
+      request({'url': url, 'headers': headers}, function (error, response, body) {
+      if (!error && response.statusCode == 200) {
+        
+        var val= JSON.parse(body);
+        insertSummoner(val)
+      }else{
+        var val ='undefined';
+      }
+      callback(val);
+    }); 
   }
-  callback(val);
 });
 }
 
