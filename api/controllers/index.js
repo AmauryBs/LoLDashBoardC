@@ -257,17 +257,59 @@ function winrateChamp(req, res){
       res.json({'winrate':champion_winrates,'win':win,'loss':loss});
   });
 }
+function loadGame(req,res){}
+
+function insertGame(game){
+  const newGame = models.Game({
+      _id	 : game.gameId,    
+      gameType : game.gameType,
+      gameDuration	 : game.gameDuration,
+      platformId : game.platformId,
+      gameCreation: game.gameCreation,
+      seasonId : game.seasonId,
+      gameVersion	: game.gameVersion,
+      mapId : game.mapId,
+      gameMode :  game.gameMode,
+      teams : game.teams,
+      participants : game.participants,
+      participantIdentities: game.participantIdentities,
+  })
+  newGame.save(function(err){
+    if (err) throw err;
+    console.log(game.gameId + " inserted")
+      })
+}
+
+function insertGameInPlayer(game, callback){
+  for(player of game.participantIdentities){
+    models.Summoner.update(
+      { _id: player['player']['accountId'] }, 
+      { $push: { GamesIdList: [match.gameId] } },
+      done
+  );
+  console.log(player['player']['accountId'] + " inserted")
+
+    }
+}
 
 function historyInfo(req, res){
   gameHistory(req.body.queueId,req.body.accountId, req.body.endIndex,function(gameHisto){
     history=[]
-    var bar = new Promise((resolve, reject) =>{ gameHisto.matches.forEach((element, index, array) => 
-        gameInfo(element.gameId,function(result){
-        history.push(result)
-        if (index === array.length -1) resolve();
+    var bar = new Promise((resolve, reject) =>{ gameHisto.matches.forEach((match, index, array) => 
+      models.Game.findOne({_id: match.gameId}, function (err, oneGame){
+        if (oneGame){
+          if (index === array.length -1) resolve();
+        }else{
+          gameInfo(match.gameId,function(result){
+            insertGame(result)
+            history.push(result)
+            if (index === array.length -1) resolve();
+          })
+        }
       })
-      );});
-      bar.then(() => {res.json(history);});
+      );
+    }); 
+    bar.then(() => {res.json(history);});
   })
 }
 
