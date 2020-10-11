@@ -62,7 +62,6 @@ function requestProfile(name, callback) {
         callback(val);
     });
 
-  });
   }
 
 
@@ -250,6 +249,7 @@ function historyInfo(req, res){
       );});
       bar.then(() => {res.json(history);});
   })
+}
 
 
 
