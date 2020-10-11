@@ -10,7 +10,7 @@ h1{
     border:4px;
 }
 
-#container{
+#container-fluid{
     background-color: lightgrey;
     display: inline-block;
     border-style: solid;

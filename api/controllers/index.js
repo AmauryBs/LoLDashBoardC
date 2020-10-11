@@ -2,7 +2,7 @@ const { Template } = require('ejs');
 const { version } = require('mongoose');
 
 require('dotenv').config()
-request=require('request')
+request = require('request')
 
 
 headers = {
@@ -12,40 +12,56 @@ headers = {
 }
 
 function generateHTML(req, res) {
-  if(req.body.name ==''){
-    console.log('empty name')
-    res.render('pages/summonerPage');
-    return;
-  }
-  requestProfile(req.body.name, function(result){
-    if (result != 'undefined'){
-      var id = result.id
-      var data = result
-    }else{
-    
-      console.log('cannot find summoner: ' + req.body.name)
-      res.render('pages/summonerPage');
-      return;
+    if (req.body.name == '') {
+        console.log('empty name')
+        res.render('pages/summonerPage');
+        return;
     }
+    requestProfile(req.body.name, function (result) {
+        if (result != 'undefined' && result != undefined) {
+            var id = result.id
+            var data = result
+        } else {
 
-    requestRanked(id, function(ranked){
-      if (ranked != 'undefined'){
-        data = Object.assign({'account': data}, {'ranked':ranked})
-      }
-      in_game(id, function(game){
-        if (game != 'undefined' && game!= undefined) {
-          gameType(game.gameQueueConfigId, function(queue){
-            if(queue!=''){
-              game.gameQueueConfigId = queue
-            }
-            data = Object.assign(data, {'in_game':game})
-            res.render('pages/summonerPage',data);
-          })
-        } else{
-          res.render('pages/summonerPage',data);
+            console.log('cannot find summoner: ' + req.body.name)
+            res.render('pages/summonerPage');
+            return;
         }
-      });
+
+        requestRanked(id, function (ranked) {
+            if (ranked != 'undefined' &&ranked != undefined) {
+                data = Object.assign({ 'account': data }, { 'ranked': ranked })
+            }
+            in_game(id, function (game) {
+                if (game != 'undefined' && game != undefined) {
+                    gameType(game.gameQueueConfigId, function (queue) {
+                        if (queue != '') {
+                            game.gameQueueConfigId = queue
+                        }
+                        data = Object.assign(data, { 'in_game': game })
+                        res.render('pages/summonerPage', data);
+                    })
+                } else {
+                    res.render('pages/summonerPage', data);
+                }
+            });
+        });
     });
+}
+
+
+function requestProfile(name, callback) {
+    url = encodeURI('https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/' + name + '?api_key=' + process.env.API_KEY);
+    request(url, function (error, response, body) {
+        if (!error && response.statusCode == 200) {
+
+            var val = JSON.parse(body);
+        } else {
+            var val = 'undefined';
+        }
+        callback(val);
+    });
+
   });
   }
 
@@ -85,25 +101,26 @@ function in_game(id,callback){
 });
 }
 
-function gameType(idQueue, callback){
-  url = 'http://static.developer.riotgames.com/docs/lol/queues.json';
-  var res=''
-  request(url, function (error, response, body) {
-  if (!error && response.statusCode == 200) {
-      var val= JSON.parse(body);
-      val.forEach(function (item, index) {
-      
-        if (item.queueId == idQueue){
-            console.log(item.map)
-            res =item.map + ", " + item.description
-          }
-      })
-    }
-    callback(res)
-  })
+function gameType(idQueue, callback) {
+    url = 'http://static.developer.riotgames.com/docs/lol/queues.json';
+    var res = ''
+    request(url, function (error, response, body) {
+        if (!error && response.statusCode == 200) {
+            var val = JSON.parse(body);
+            val.forEach(function (item, index) {
+
+                if (item.queueId == idQueue) {
+                    console.log(item.map)
+                    res = item.map + ", " + item.description
+                }
+            })
+        }
+        callback(res)
+    })
 }
 
-function gameHistory(queueId,accountId, endIndex,callback){
+function gameHistory(queueId, accountId, endIndex, callback) {
+
 
   if (queueId !=-1){
     url= encodeURI('https://euw1.api.riotgames.com/lol/match/v4/matchlists/by-account/' + accountId + '?queue=' + queueId +'&endIndex='+ endIndex);
@@ -120,7 +137,7 @@ function gameHistory(queueId,accountId, endIndex,callback){
       }
       callback(val)       
     })
-  }
+}
 
 function gameInfo(matchid, callback){
   url= encodeURI('https://euw1.api.riotgames.com/lol/match/v4/matches/' + matchid);
@@ -233,7 +250,7 @@ function historyInfo(req, res){
       );});
       bar.then(() => {res.json(history);});
   })
-}
+
 
 
 module.exports.generateHTML = generateHTML;
