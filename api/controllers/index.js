@@ -140,8 +140,7 @@ function gameType(idQueue, callback){
 }
 
 function gameHistory(queueId,accountId, endIndex,callback){
-
-  if (queueId !=-1){
+  if (queueId !='-1'){
     url= encodeURI('https://euw1.api.riotgames.com/lol/match/v4/matchlists/by-account/' + accountId + '?queue=' + queueId +'&endIndex='+ endIndex);
   }
   else{
@@ -158,7 +157,7 @@ function gameHistory(queueId,accountId, endIndex,callback){
     })
   }
 
-function gameInfo(matchid, callback){
+function gameInfo(matchid,callback){
   url= encodeURI('https://euw1.api.riotgames.com/lol/match/v4/matches/' + matchid);
   var val=''
     request({'url': url, 'headers': headers}, function (error, response, body) {
@@ -168,6 +167,7 @@ function gameInfo(matchid, callback){
         console.log(body)  
       }
       callback(val)
+      return("val")
     })
   }
 
@@ -230,7 +230,6 @@ function matchCalc(result, champion){
     }
   }
   champion_winrates[champion][2] += 1
-  console.log(champion_winrates)
   return(4)
 }
 
@@ -240,10 +239,11 @@ function winrateChamp(req, res){
     loss = 0
     champion_winrates = {}
       for( const match of gameHisto.matches){
-        gameInfo(match.gameId, function(matchinfo){
-          winrateChampOne(matchinfo, req.body.accountId,function(result,champion){
-            console.log(matchCalc(result, champion))
+        await gameInfo(match.gameId, async function(matchinfo){
+          await winrateChampOne(matchinfo, req.body.accountId,async function(result,champion){
+            await matchCalc(result, champion)
           })
+          console.log(champion_winrates)
         })
       }
       // var items = Object.keys(champion_winrates).map(function(key) {
@@ -276,44 +276,66 @@ function insertGame(game){
   })
   newGame.save(function(err){
     if (err) throw err;
-    console.log(game.gameId + " inserted")
+    console.log(game.gameId + " game inserted")
       })
 }
 
-function insertGameInPlayer(game, callback){
+async function insertGameInPlayer(game){
   for(player of game.participantIdentities){
-    models.Summoner.update(
-      { _id: player['player']['accountId'] }, 
-      { $push: { GamesIdList: [match.gameId] } },
-      done
-  );
-  console.log(player['player']['accountId'] + " inserted")
-
-    }
+    await models.Summoner.findOne({lowerName: player.player.summonerName.toLowerCase()}, async function (err, summo){ 
+      if(summo){
+        models.Summoner.update(
+          { _id: player.player.summonerId }, 
+          { $push: { GamesIdList: [game.gameId] } }, function(err, ans){
+            if (err) throw err;
+          console.log(player.player.summonerName + " updated with game " + game.gameId)
+        });
+      }else{
+        console.log(player.player.summonerName)
+        const newSummoner = models.Summoner({
+          _id : player.player.summonerId,
+          accountId : player.player.accountId,
+          profileIconId : player.player.profileIcon,
+          name : player.player.summonerName,
+          lowerName : player.player.summonerName.toLowerCase(),
+          lastUpdate : new Date(),
+          GamesIdList: [game.gameId]
+        })
+      
+        await newSummoner.save(function(err){
+          if (err) throw err;
+          console.log(player.player.summonerName + " inserted with game " + game.gameId)
+        })
+      }
+    })
+  }
+  console.log('done')
+  return('done')
 }
 
-function historyInfo(req, res){
+function historyInsert(req, res){
   gameHistory(req.body.queueId,req.body.accountId, req.body.endIndex,function(gameHisto){
-    history=[]
     var bar = new Promise((resolve, reject) =>{ gameHisto.matches.forEach((match, index, array) => 
-      models.Game.findOne({_id: match.gameId}, function (err, oneGame){
+      models.Game.findOne({_id: match.gameId}, async function (err, oneGame){
         if (oneGame){
           if (index === array.length -1) resolve();
         }else{
-          gameInfo(match.gameId,function(result){
-            insertGame(result)
-            history.push(result)
+          console.log("next game")
+          await gameInfo(match.gameId,async function(result){
+            console.log('game info loaded')
+            //insertGame(result)
+            await insertGameInPlayer(result)
             if (index === array.length -1) resolve();
           })
         }
       })
       );
     }); 
-    bar.then(() => {res.json(history);});
+    bar.then(() => {res.json('done');});
   })
 }
 
 
 module.exports.generateHTML = generateHTML;
-module.exports.historyInfo = historyInfo;
+module.exports.historyInsert = historyInsert;
 module.exports.winrateChamp = winrateChamp;
