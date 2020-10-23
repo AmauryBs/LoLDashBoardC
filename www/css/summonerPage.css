@@ -60,9 +60,32 @@
     margin-bottom: 2em;
 }
 
-.gameStats
+.gameContent
 {
     border: 2px solid;
+
+    display: flex;
+    flex:0 0 auto;
+    flex-direction: row;
+}
+
+.gameContent article {
+    padding:2px 5px;
+}
+
+.gameContent article.summonerStats {
+    
+    display: flex;
+    flex:0 0 auto;
+    flex-direction: row;
+
+    padding:2px 5px;
+}
+
+.gameContent article div {
+    
+    
+    padding:2px 5px;
 }
 
 

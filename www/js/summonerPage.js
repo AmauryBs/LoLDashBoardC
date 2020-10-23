@@ -97,7 +97,37 @@ function displayGameHistory(games, name) {
         let deaths = game.participants[partId - 1].stats.deaths;
         let assists = game.participants[partId - 1].stats.assists;
 
-        var KDA = "<span>" + kills + "</span> / <span>" + deaths + "</span> / <span>" + assists + "</span>";
+        var KDA =  $("<div/>", { class: "KDAStats", html:"<span>" + kills + "</span> / <span>" + deaths + "</span> / <span>" + assists + "</span>"});
+        var KDAratio =  $("<span/>", { class: "KDARation", html:Math.round(((kills+assists)/deaths) * 100) / 100 +":1"});
+        //did he get multiple kill
+        var multiKills ="";
+        if(game.participants[partId - 1].stats.pentaKills >0)
+        {
+            multiKills = "Penta Kills";
+        }
+        else if(game.participants[partId - 1].stats.tripleKills >0)
+        {
+            multiKills = "Triple Kills";
+        }
+        else if(game.participants[partId - 1].stats.quadraKills >0)
+        {
+            multiKills = " Quadra Kills";
+        }
+        else if(game.participants[partId - 1].stats.doubleKills >0)
+        {
+            multiKills = "Double Kills";
+        }
+
+        var killAchievement =  $("<div/>", { class: "killAchievement", multiKills});
+
+        //level 
+        var level = $("<div/>", { class: "champLevel", html:game.participants[partId - 1].stats.champLevel});
+
+        //CS on minions
+        let CSContent = $('<span/>', { class: "CS tip",html:game.participants[partId - 1].stats.totalMinionsKilled +" sbires tués"});
+        var CS = $('<div/>', { class: "CS", html:CSContent});
+        
+
         /*
         Append succesifs dans l'article correspondant à une game
         */
@@ -110,8 +140,15 @@ function displayGameHistory(games, name) {
         //Display GameType
         gameStats.append($('<span/>', { class: "gameDurationTime", html: "Time " + gameDurationTime }));
 
-        
-        let content = gameStats;
+
+        //summoner Stats (KDA, multiKill, sbires...)
+        let summonerStats = $("<article/>", { class: "summonerStats" });
+        summonerStats.append($('<div/>', { class: "KDA", title: "KDA", html: [KDA,KDAratio,killAchievement]}));
+        let othersummonerStats = level.append(CS);
+        summonerStats.append($('<div/>', { class: "CS", html: othersummonerStats}));
+
+
+        let content = [gameStats,summonerStats];
         $("#gameHistory").append($("<div/>", { id: "gameContent" + game.gameId, class: "gameContent", html: content }))
 
     });
