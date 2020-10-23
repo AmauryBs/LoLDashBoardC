@@ -181,7 +181,7 @@
                                                 <td>rank</td>
                                                 <td><%= ranked[1].tier%>
                                                     <%=ranked[1].rank%> :
-                                                    <%=ranked[1].leaguePoints%> lp
+                                                    <%=ranked[1].leaguePoints%>
                                                 </td>
                                             </tr>
                                         </tbody>
@@ -196,8 +196,13 @@
 
 
                         </div>
-                        <div class="col-auto border border-dark">
+                        <div id="gameHistory" class="col-auto border border-dark">
+                            <script>
+                                let accName = '<%=account.name%>';
+                                accName.toString();
+                                loadHistory(accName); 
 
+                            </script>
                         </div>
                         <div class="col border border-dark">
                             <p>Les champions avec qui il a le plus joué</p>

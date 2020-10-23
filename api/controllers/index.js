@@ -50,7 +50,7 @@ function generateHTML(req, res) {
 }
 
 
-function requestProfile(name, callback) {
+/*function requestProfile(name, callback) {
     url = encodeURI('https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/' + name + '?api_key=' + process.env.API_KEY);
     request(url, function (error, response, body) {
         if (!error && response.statusCode == 200) {
@@ -62,14 +62,13 @@ function requestProfile(name, callback) {
         callback(val);
     });
 
-  }
+  }*/
 
 
 function requestProfile(name, callback){
   url= encodeURI('https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/'+name);
   request({'url': url, 'headers': headers}, function (error, response, body) {
   if (!error && response.statusCode == 200) {
-    
     var val= JSON.parse(body);
   }else{
     var val ='undefined';
@@ -239,7 +238,12 @@ function winrateChamp(req, res){
 }
 
 function historyInfo(req, res){
-  gameHistory(req.body.queueId,req.body.accountId, req.body.endIndex,function(gameHisto){
+  requestProfile(req.body.name, function (result) {
+    if (result != 'undefined' && result != undefined) {
+        var id = result.id
+        var data = result
+    
+  gameHistory(req.body.queueId,data.accountId, req.body.endIndex,function(gameHisto){
     history=[]
     var bar = new Promise((resolve, reject) =>{ gameHisto.matches.forEach((element, index, array) => 
         gameInfo(element.gameId,function(result){
@@ -250,9 +254,12 @@ function historyInfo(req, res){
       bar.then(() => {res.json(history);});
   })
 }
+});
+}
 
 
 
 module.exports.generateHTML = generateHTML;
 module.exports.historyInfo = historyInfo;
+module.exports.ChampionIdToName = ChampionIdToName;
 module.exports.winrateChamp = winrateChamp;
