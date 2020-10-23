@@ -3,7 +3,9 @@ const { version } = require('mongoose');
 const models = require('../../schemas');
 
 require('dotenv').config()
+
 const requestP = require("request-promise");
+
 
 
 headers = {
@@ -119,6 +121,7 @@ async function in_game(id,callback){
     return(result);
   }
 }
+
 
 async function gameType(idQueue, callback){
   url = 'http://static.developer.riotgames.com/docs/lol/queues.json';
