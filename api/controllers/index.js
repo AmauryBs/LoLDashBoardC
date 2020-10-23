@@ -1,8 +1,11 @@
 const { Template } = require('ejs');
 const { version } = require('mongoose');
+const models = require('../../schemas');
 
 require('dotenv').config()
-request = require('request')
+
+const requestP = require("request-promise");
+
 
 
 headers = {
@@ -11,164 +14,187 @@ headers = {
   "X-Riot-Token": process.env.API_KEY,
 }
 
-function generateHTML(req, res) {
-    if (req.body.name == '') {
-        console.log('empty name')
-        res.render('pages/summonerPage');
-        return;
+async function generateHTML(req, res) {
+  if(req.body.name ==''){
+    console.log('empty name')
+    res.render('pages/summonerPage');
+    return;
+  }
+  player = await models.Summoner.findOne({lowerName: req.body.name.toLowerCase()})
+  if(player){
+    game = await in_game(player.id)
+    if (game != 'error' && game!= undefined) {
+      queue = await gameType(game.gameQueueConfigId)
+      console.log(queue)
+      if(queue!=''){
+        game.gameQueueConfigId = queue
+      }
+      player = Object.assign(player, {'in_game':game})
+      res.render('pages/summonerPage',player);
+    }else{
+      res.render('pages/summonerPage',player);
     }
-    requestProfile(req.body.name, function (result) {
-        if (result != 'undefined' && result != undefined) {
-            var id = result.id
-            var data = result
-        } else {
-
-            console.log('cannot find summoner: ' + req.body.name)
-            res.render('pages/summonerPage');
-            return;
-        }
-
-        requestRanked(id, function (ranked) {
-            if (ranked != 'undefined' &&ranked != undefined) {
-                data = Object.assign({ 'account': data }, { 'ranked': ranked })
-            }
-            in_game(id, function (game) {
-                if (game != 'undefined' && game != undefined) {
-                    gameType(game.gameQueueConfigId, function (queue) {
-                        if (queue != '') {
-                            game.gameQueueConfigId = queue
-                        }
-                        data = Object.assign(data, { 'in_game': game })
-                        res.render('pages/summonerPage', data);
-                    })
-                } else {
-                    res.render('pages/summonerPage', data);
-                }
-            });
-        });
-    });
-}
-
-
-function requestProfile(name, callback) {
-    url = encodeURI('https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/' + name + '?api_key=' + process.env.API_KEY);
-    request(url, function (error, response, body) {
-        if (!error && response.statusCode == 200) {
-
-            var val = JSON.parse(body);
-        } else {
-            var val = 'undefined';
-        }
-        callback(val);
-    });
-
-  });
-  }
-
-
-function requestProfile(name, callback){
-  url= encodeURI('https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/'+name);
-  request({'url': url, 'headers': headers}, function (error, response, body) {
-  if (!error && response.statusCode == 200) {
-    
-    var val= JSON.parse(body);
   }else{
-    var val ='undefined';
+    result = await requestProfile(req.body.name)
+    if (result != 'undefined'){
+      var id = result.id
+      var data = result
+    }else{
+      console.log('cannot find summoner: ' + req.body.name)
+      res.render('pages/summonerPage');
+      return;
+    }
+    ranked = await requestRanked(id)
+    if (ranked != 'undefined'){
+      data = Object.assign(data, {'ranked':ranked})
+      insertSummoner(data)
+    }
+    game = await in_game(id)
+    if (game != 'undefined' && game!= undefined) {
+      queue = await gameType(game.gameQueueConfigId)
+      if(queue!=''){
+        game.gameQueueConfigId = queue
+      }
+      data = Object.assign(data, {'in_game':game})
+      res.render('pages/summonerPage',data);
+    }else{
+      res.render('pages/summonerPage',data);
+    }
   }
-  callback(val);
-});
 }
 
-function requestRanked(id, callback){
+async function insertSummoner(summo){
+  const newSummoner = models.Summoner({
+    _id : summo.id,
+    accountId : summo.accountId,
+    profileIconId : summo.profileIconId,
+    revisionDate : summo.revisionDate,
+    name : summo.name,
+    lowerName : summo.name.toLowerCase(),
+    summonerLevel: summo.summonerLevel,
+    lastUpdate : new Date(),
+    ranked : summo.ranked
+  })
+  try{
+    await newSummoner.save()
+    //console.log(summo.name + " inserted")
+  }catch(e){
+      console.error(e.error);
+    }
+}
+
+async function requestProfile(playerName, callback){
+  url= encodeURI('https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/'+playerName);
+  try{
+    var result = await requestP({'url': url, 'headers': headers})
+    result = JSON.parse(result)
+  }catch(e){
+    console.error(e.error);
+    result = "error"
+  }finally {
+    return(result);
+  }
+}
+
+async function requestRanked(id, callback){
   url = encodeURI('https://euw1.api.riotgames.com/lol/league/v4/entries/by-summoner/'+ id);
-  var val ='undefined';
-  request({'url': url, 'headers': headers}, function (error, response, body) {
-  if (!error && response.statusCode == 200) {
-    var val= JSON.parse(body);
+  try{
+    var result = await requestP({'url': url, 'headers': headers})
+    result = JSON.parse(result)
+  }catch(e){
+    console.error(e.error);
+    result = "error"
+  }finally {
+    return(result);
   }
-  callback(val);
-});
 }
 
-function in_game(id,callback){
+async function in_game(id,callback){
   url = encodeURI('https://euw1.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/'+ id);
-  var val ='undefined';
-  request({'url': url, 'headers': headers}, function (error, response, body) {
-  if (!error && response.statusCode == 200) {
-    var val= JSON.parse(body);
+  try{
+    var result = await requestP({'url': url, 'headers': headers})
+    result = JSON.parse(result)
+  }catch(e){
+    console.error(e.error);
+    result = "error"
+  }finally {
+    return(result);
   }
-  callback(val);
-});
 }
 
-function gameType(idQueue, callback) {
-    url = 'http://static.developer.riotgames.com/docs/lol/queues.json';
-    var res = ''
-    request(url, function (error, response, body) {
-        if (!error && response.statusCode == 200) {
-            var val = JSON.parse(body);
-            val.forEach(function (item, index) {
 
-                if (item.queueId == idQueue) {
-                    console.log(item.map)
-                    res = item.map + ", " + item.description
-                }
-            })
+async function gameType(idQueue, callback){
+  url = 'http://static.developer.riotgames.com/docs/lol/queues.json';
+  var res=''
+  try{
+    var result = await requestP({'url': url, 'headers': headers})
+    result = JSON.parse(result)
+    result.forEach(function (item, index) {
+      
+      if (item.queueId == idQueue){
+          console.log(item.map)
+          res =item.map + ", " + item.description
         }
-        callback(res)
     })
+  }catch(e){
+    console.error(e.error);
+    res = "error"
+  }finally {
+    return(res);
+  }
 }
 
-function gameHistory(queueId, accountId, endIndex, callback) {
-
-
-  if (queueId !=-1){
+async function gameHistory(queueId,accountId, endIndex){
+  if (queueId !='-1'){
     url= encodeURI('https://euw1.api.riotgames.com/lol/match/v4/matchlists/by-account/' + accountId + '?queue=' + queueId +'&endIndex='+ endIndex);
   }
   else{
     url= encodeURI('https://euw1.api.riotgames.com/lol/match/v4/matchlists/by-account/' + accountId + '?endIndex='+ endIndex );
   }
-  var val=''
-    request({'url': url, 'headers': headers}, function (error, response, body) {
-      if (!error && response.statusCode == 200) {
-        var val= JSON.parse(body);
-      }else{
-        console.log(body)  
-      }
-      callback(val)       
-    })
-}
-
-function gameInfo(matchid, callback){
-  url= encodeURI('https://euw1.api.riotgames.com/lol/match/v4/matches/' + matchid);
-  var val=''
-    request({'url': url, 'headers': headers}, function (error, response, body) {
-      if (!error && response.statusCode == 200) {
-        var val= JSON.parse(body);
-      }else{
-        console.log(body)  
-      }
-      callback(val)
-    })
+  try{
+    var result = await requestP({'url': url, 'headers': headers})
+  }catch(e){
+    console.error(e.error);
+    result = "error"
+      }finally {
+        return new Promise(resolve => {resolve(JSON.parse(result))})
+    }
   }
 
-function ChampionIdToName(id, callback){
-  request('https://ddragon.leagueoflegends.com/api/versions.json', function (error, response, lolvers){
-    verslist = JSON.parse(lolvers) 
-    vers = verslist[0]
-    url = 'http://ddragon.leagueoflegends.com/cdn/'+ vers +'/data/en_US/champion.json'
-    request(url , function (error, response, body){
-      body = JSON.parse(body)
-      champions = {}
-      Object.keys(body.data).forEach(champion =>{
-        key = body['data'][champion].key;
-        champions[key] = champion;}
-      )
-     callback(champions[id])
-    })
-  })
-  
+async function gameInfo(matchid){
+  url= encodeURI('https://euw1.api.riotgames.com/lol/match/v4/matches/' + matchid);
+  var val=''
+  try{
+  var result = await requestP({'url': url, 'headers': headers})
+  }catch(e){
+    console.error(e.error);
+    result = "error"
+  } finally {
+    return new Promise(resolve => {resolve(JSON.parse(result))})
+  }
 }
+
+async function ChampionIdToName(id, callback){
+  url= encodeURI('https://ddragon.leagueoflegends.com/api/versions.json');
+  try{
+  var result = await requestP({'url': url, 'headers': headers})
+  verslist = JSON.parse(result)
+  vers = verslist[0] 
+  url2 = 'http://ddragon.leagueoflegends.com/cdn/'+ vers +'/data/en_US/champion.json'
+  var champsIds = await requestP({'url': url2, 'headers': headers})
+  champsIds = JSON.parse(champsIds)
+  champions = {}
+  Object.keys(body.data).forEach(champion =>{
+    key = body['data'][champion].key;
+    champions[key] = champion;})
+    console.log(champions[id])
+    callback(champions[id])
+  }catch(e){
+    console.error(e.error);
+    callback("error")
+  } 
+}
+
 function winrateChampOne(matchinfo,accountId, callback){
   var participantID;
   for( const player of matchinfo.participantIdentities){
@@ -211,7 +237,6 @@ function matchCalc(result, champion){
     }
   }
   champion_winrates[champion][2] += 1
-  console.log(champion_winrates)
   return(4)
 }
 
@@ -221,10 +246,11 @@ function winrateChamp(req, res){
     loss = 0
     champion_winrates = {}
       for( const match of gameHisto.matches){
-        gameInfo(match.gameId, function(matchinfo){
-          winrateChampOne(matchinfo, req.body.accountId,function(result,champion){
-            console.log(matchCalc(result, champion))
+        await gameInfo(match.gameId, async function(matchinfo){
+          await winrateChampOne(matchinfo, req.body.accountId,async function(result,champion){
+            await matchCalc(result, champion)
           })
+          console.log(champion_winrates)
         })
       }
       // var items = Object.keys(champion_winrates).map(function(key) {
@@ -238,21 +264,78 @@ function winrateChamp(req, res){
       res.json({'winrate':champion_winrates,'win':win,'loss':loss});
   });
 }
+function loadGame(req,res){}
 
-function historyInfo(req, res){
-  gameHistory(req.body.queueId,req.body.accountId, req.body.endIndex,function(gameHisto){
-    history=[]
-    var bar = new Promise((resolve, reject) =>{ gameHisto.matches.forEach((element, index, array) => 
-        gameInfo(element.gameId,function(result){
-        history.push(result)
-        if (index === array.length -1) resolve();
-      })
-      );});
-      bar.then(() => {res.json(history);});
+async function insertGame(game){
+  const newGame = models.Game({
+      _id	 : game.gameId,    
+      gameType : game.gameType,
+      gameDuration	 : game.gameDuration,
+      platformId : game.platformId,
+      gameCreation: game.gameCreation,
+      seasonId : game.seasonId,
+      gameVersion	: game.gameVersion,
+      mapId : game.mapId,
+      gameMode :  game.gameMode,
+      teams : game.teams,
+      participants : game.participants,
+      participantIdentities: game.participantIdentities,
   })
+  try{
+    await newGame.save()
+    //console.log(game.gameId + " game inserted")
+  }catch(e){
+      console.error(e.error);
+    }
+}
 
+async function insertGameInPlayer(game){
+  for(player of game.participantIdentities){
+    await models.Summoner.findOne({lowerName: player.player.summonerName.toLowerCase()}, async function (err, summo){ 
+      if(summo){
+        try{
+          await models.Summoner.update(
+            { _id: player.player.summonerId }, 
+            { $push: { GamesIdList: [game.gameId] }});
+        }catch(e){
+            console.error(e.error);
+          }
+      }else{
+        const newSummoner = models.Summoner({
+          _id : player.player.summonerId,
+          accountId : player.player.accountId,
+          profileIconId : player.player.profileIcon,
+          name : player.player.summonerName,
+          lowerName : player.player.summonerName.toLowerCase(),
+          lastUpdate : new Date(),
+          GamesIdList: [game.gameId]
+        })
+        try{
+          await newSummoner.save()
+          //console.log(player.player.summonerName + " inserted with game " + game.gameId)
+        }catch(e){
+          console.error(e.error);
+        }
+      }
+    })
+  }
+  return('done')
+}
 
+async function historyInsert(req, res){
+  gameHisto = await gameHistory(req.body.queueId,req.body.accountId, req.body.endIndex)
+  for( match of gameHisto.matches){
+    oneGame = await models.Game.findOne({_id: match.gameId})
+    if (oneGame){
+    }else{
+      const res = await gameInfo(match.gameId)
+      insertGame(res)
+      await insertGameInPlayer(res)
+    }
+  }
+  res.json('done');
+}
 
 module.exports.generateHTML = generateHTML;
-module.exports.historyInfo = historyInfo;
+module.exports.historyInsert = historyInsert;
 module.exports.winrateChamp = winrateChamp;

@@ -6,7 +6,7 @@ router.post('/summonerPage', (req, res) => {
 });
 
 router.get('/gameHistory', (req, res) => {
-    controller.historyInfo(req, res);
+    controller.historyInsert(req, res);
 });
 
 router.get('/winrateChamp', (req, res) => {
