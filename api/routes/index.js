@@ -9,6 +9,10 @@ router.get('/gameHistory', (req, res) => {
     controller.historyInsert(req, res);
 });
 
+router.get('/loadGame', (req, res) => {
+    controller.loadGame(req, res);
+});
+
 router.get('/winrateChamp', (req, res) => {
     controller.winrateChamp(req, res);
 });

@@ -83,7 +83,7 @@ async function insertSummoner(summo){
     }
 }
 
-async function requestProfile(playerName, callback){
+async function requestProfile(playerName){
   url= encodeURI('https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/'+playerName);
   try{
     var result = await requestP({'url': url, 'headers': headers})
@@ -96,7 +96,7 @@ async function requestProfile(playerName, callback){
   }
 }
 
-async function requestRanked(id, callback){
+async function requestRanked(id){
   url = encodeURI('https://euw1.api.riotgames.com/lol/league/v4/entries/by-summoner/'+ id);
   try{
     var result = await requestP({'url': url, 'headers': headers})
@@ -109,7 +109,7 @@ async function requestRanked(id, callback){
   }
 }
 
-async function in_game(id,callback){
+async function in_game(id){
   url = encodeURI('https://euw1.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/'+ id);
   try{
     var result = await requestP({'url': url, 'headers': headers})
@@ -123,7 +123,7 @@ async function in_game(id,callback){
 }
 
 
-async function gameType(idQueue, callback){
+async function gameType(idQueue){
   url = 'http://static.developer.riotgames.com/docs/lol/queues.json';
   var res=''
   try{
@@ -264,7 +264,20 @@ function winrateChamp(req, res){
       res.json({'winrate':champion_winrates,'win':win,'loss':loss});
   });
 }
-function loadGame(req,res){}
+async function loadGame(req,res){
+  var games=[]
+  try{
+    player = await models.Summoner.findOne({lowerName: req.body.name.toLowerCase()})
+    for(gameId of player.GamesIdList){
+      games.push(await models.Game.findOne({_id: gameId}))
+    }
+  }
+  catch(e){
+    console.error(e.error);
+  }finally{
+    res.json(games)
+  }
+}
 
 async function insertGame(game){
   const newGame = models.Game({
@@ -339,3 +352,4 @@ async function historyInsert(req, res){
 module.exports.generateHTML = generateHTML;
 module.exports.historyInsert = historyInsert;
 module.exports.winrateChamp = winrateChamp;
+module.exports.loadGame = loadGame;
