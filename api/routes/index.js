@@ -5,8 +5,8 @@ router.post('/summonerPage', (req, res) => {
     controller.generateHTML(req, res);
 });
 
-router.get('/gameHistory', (req, res) => {
-    controller.historyInsert(req, res);
+router.get('/update', (req, res) => {
+    controller.updateAll(req, res);
 });
 
 router.get('/loadGame', (req, res) => {

@@ -25,7 +25,6 @@ async function generateHTML(req, res) {
     game = await in_game(player.id)
     if (game != 'error' && game!= undefined) {
       queue = await gameType(game.gameQueueConfigId)
-      console.log(queue)
       if(queue!=''){
         game.gameQueueConfigId = queue
       }
@@ -35,21 +34,9 @@ async function generateHTML(req, res) {
       res.render('pages/summonerPage',player);
     }
   }else{
-    result = await requestProfile(req.body.name)
-    if (result != 'undefined'){
-      var id = result.id
-      var data = result
-    }else{
-      console.log('cannot find summoner: ' + req.body.name)
-      res.render('pages/summonerPage');
-      return;
-    }
-    ranked = await requestRanked(id)
-    if (ranked != 'undefined'){
-      data = Object.assign(data, {'ranked':ranked})
-      insertSummoner(data)
-    }
-    game = await in_game(id)
+    data = await dataSummoner(req.body.name, true)
+    await insertSummoner(data)
+    game = await in_game(data.id)
     if (game != 'undefined' && game!= undefined) {
       queue = await gameType(game.gameQueueConfigId)
       if(queue!=''){
@@ -63,7 +50,25 @@ async function generateHTML(req, res) {
   }
 }
 
+async function dataSummoner(id, byName){
+  profile = await requestProfile(id, byName)
+  if (profile != 'undefined'){
+    var id = profile.id
+    var data = profile
+  }else{
+    console.log('cannot find summoner: ' + id)
+    return({});
+  }
+  ranked = await requestRanked(id)
+  if (ranked != 'undefined'){
+    data = Object.assign(data, {'ranked':ranked})
+  }
+  return(data)
+}
+
+
 async function insertSummoner(summo){
+
   const newSummoner = models.Summoner({
     _id : summo.id,
     accountId : summo.accountId,
@@ -72,7 +77,7 @@ async function insertSummoner(summo){
     name : summo.name,
     lowerName : summo.name.toLowerCase(),
     summonerLevel: summo.summonerLevel,
-    lastUpdate : new Date(),
+    lastUpdate : 0,
     ranked : summo.ranked
   })
   try{
@@ -83,8 +88,13 @@ async function insertSummoner(summo){
     }
 }
 
-async function requestProfile(playerName){
-  url= encodeURI('https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/'+playerName);
+async function requestProfile(id, byName){
+  var url = ""
+  if(byName){
+    url= encodeURI('https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/'+id);
+  }else{
+    url= encodeURI('https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-account/'+id);
+  }
   try{
     var result = await requestP({'url': url, 'headers': headers})
     result = JSON.parse(result)
@@ -121,7 +131,6 @@ async function in_game(id){
     return(result);
   }
 }
-
 
 async function gameType(idQueue){
   url = 'http://static.developer.riotgames.com/docs/lol/queues.json';
@@ -273,7 +282,7 @@ async function loadGame(req,res){
     }
   }
   catch(e){
-    console.error(e.error);
+    console.error(e);
   }finally{
     res.json(games)
   }
@@ -304,15 +313,12 @@ async function insertGame(game){
 
 async function insertGameInPlayer(game){
   for(player of game.participantIdentities){
-    await models.Summoner.findOne({lowerName: player.player.summonerName.toLowerCase()}, async function (err, summo){ 
+    try{
+      summo =await models.Summoner.findOne({lowerName: player.player.summonerName.toLowerCase()}) 
       if(summo){
-        try{
-          await models.Summoner.update(
-            { _id: player.player.summonerId }, 
-            { $push: { GamesIdList: [game.gameId] }});
-        }catch(e){
-            console.error(e.error);
-          }
+        await models.Summoner.updateOne(
+          { _id: player.player.summonerId }, 
+          { $push: { GamesIdList: [game.gameId] }});
       }else{
         const newSummoner = models.Summoner({
           _id : player.player.summonerId,
@@ -320,36 +326,66 @@ async function insertGameInPlayer(game){
           profileIconId : player.player.profileIcon,
           name : player.player.summonerName,
           lowerName : player.player.summonerName.toLowerCase(),
-          lastUpdate : new Date(),
+          lastUpdate : 0,
           GamesIdList: [game.gameId]
         })
-        try{
-          await newSummoner.save()
-          //console.log(player.player.summonerName + " inserted with game " + game.gameId)
-        }catch(e){
-          console.error(e.error);
-        }
+        await newSummoner.save()
       }
-    })
+    }catch(e){
+        console.error(e.error);
+    }
   }
   return('done')
 }
-
-async function historyInsert(req, res){
-  gameHisto = await gameHistory(req.body.queueId,req.body.accountId, req.body.endIndex)
-  for( match of gameHisto.matches){
-    oneGame = await models.Game.findOne({_id: match.gameId})
-    if (oneGame){
-    }else{
-      const res = await gameInfo(match.gameId)
-      insertGame(res)
-      await insertGameInPlayer(res)
-    }
+async function updatePlayer(summo){
+  try{
+    console.log(summo)
+    await models.Summoner.updateOne(
+    { accountId: summo.accountId }, 
+    { $set: { 
+      profileIconId : summo.profileIconId,
+      revisionDate : summo.revisionDate,
+      name : summo.name,
+      lowerName : summo.name.toLowerCase(),
+      summonerLevel: summo.summonerLevel,
+      lastUpdate : new Date(),
+      ranked : summo.ranked }});
+  }catch(e){
+    console.error(e)
   }
-  res.json('done');
+}
+
+async function updateAll(req, res){
+  try{
+    summo = await models.Summoner.findOne({accountId: req.body.accountId})
+    delta = new Date() - summo.lastUpdate
+    if(delta <= 120000 ){
+      var minutes = Math.floor(delta / 60000);
+      var seconds = ((delta % 60000) / 1000).toFixed(0);
+      res.json('last update '+ minutes + ' min' + seconds + ' s ago you can only update every 2 minutes')
+    }else{
+      data = await dataSummoner(summo.accountId, false)
+      await updatePlayer(data)
+      gameHisto = await gameHistory(req.body.queueId,req.body.accountId, req.body.endIndex)
+      for( match of gameHisto.matches){
+        oneGame = await models.Game.findOne({_id: match.gameId})
+        if (oneGame){
+        }else{
+          const res = await gameInfo(match.gameId)
+          insertGame(res)
+          await insertGameInPlayer(res)
+        }
+        
+      }
+      res.json('done');
+      }
+  }catch(e){
+    console.error(e)
+    res.json('error finding summoner');
+  }
 }
 
 module.exports.generateHTML = generateHTML;
-module.exports.historyInsert = historyInsert;
+module.exports.updateAll = updateAll;
 module.exports.winrateChamp = winrateChamp;
 module.exports.loadGame = loadGame;
