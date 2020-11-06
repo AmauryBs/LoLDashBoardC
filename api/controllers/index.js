@@ -20,7 +20,8 @@ async function generateHTML(req, res) {
     res.render('pages/summonerPage');
     return;
   }
-  player = await models.Summoner.findOne({lowerName: req.body.name.toLowerCase()})
+  name = req.body.name.trim()
+  player = await models.Summoner.findOne({lowerName: name.toLowerCase()})
   if(player){
     game = await in_game(player.id)
     if (game != 'error' && game!= undefined) {
@@ -183,7 +184,8 @@ async function gameInfo(matchid){
   }
 }
 
-async function ChampionIdToName(id, callback){
+async function ChampionIdToName(req, res){
+  id = req.body.id
   url= encodeURI('https://ddragon.leagueoflegends.com/api/versions.json');
   try{
   var result = await requestP({'url': url, 'headers': headers})
@@ -193,40 +195,34 @@ async function ChampionIdToName(id, callback){
   var champsIds = await requestP({'url': url2, 'headers': headers})
   champsIds = JSON.parse(champsIds)
   champions = {}
-  Object.keys(body.data).forEach(champion =>{
-    key = body['data'][champion].key;
+  Object.keys(champsIds.data).forEach(champion =>{
+    key = champsIds['data'][champion].key;
     champions[key] = champion;})
-    console.log(champions[id])
-    callback(champions[id])
+    res.json(champions[id])
   }catch(e){
-    console.error(e.error);
-    callback("error")
+    console.error(e);
+    res.json("error")
   } 
 }
 
-function winrateChampOne(matchinfo,accountId, callback){
+async function winrateChampOne(matchinfo,accountId){
   var participantID;
   for( const player of matchinfo.participantIdentities){
     if (player.player.accountId == accountId){
       participantID = player.participantId - 1
     }
   };
-  ChampionIdToName(matchinfo.participants[participantID].championId, function(champion){
+  champion = matchinfo.participants[participantID].championId
     if (participantID <=5){
       participantID = 0
     } else {
       participantID = 1
     }
     if (matchinfo.teams[participantID].win =='Win'){
-      console.log(true)
-      console.log(champion)
-      callback(true, champion)
+      return [true, champion]
     } else{
-      console.log(false)
-      console.log(champion)
-      callback(false,champion)
+      return [false,champion]
       }
-    })
 }
 
 function matchCalc(result, champion){
@@ -249,43 +245,48 @@ function matchCalc(result, champion){
   return(4)
 }
 
-function winrateChamp(req, res){
-  gameHistory(req.body.queueId, req.body.accountId, req.body.endIndex, async function(gameHisto){
-    win = 0
-    loss = 0
-    champion_winrates = {}
-      for( const match of gameHisto.matches){
-        await gameInfo(match.gameId, async function(matchinfo){
-          await winrateChampOne(matchinfo, req.body.accountId,async function(result,champion){
-            await matchCalc(result, champion)
-          })
-          console.log(champion_winrates)
-        })
-      }
-      // var items = Object.keys(champion_winrates).map(function(key) {
-      //   return [key, champion_winrates[key]];
-      // });
-      
-      // Sort the array based on the second element
-      // items.sort(function(first, second) {
-      //   return second[1] - first[1];
-      // });
-      res.json({'winrate':champion_winrates,'win':win,'loss':loss});
-  });
+async function winrateChamp(req, res){
+  gameHisto = await loadGameBDD(req.body.name)
+  win = 0
+  loss = 0
+  champion_winrates = {}
+  for( const match of gameHisto){
+    result = await winrateChampOne(match, req.body.accountId)
+    await matchCalc(result[0], result[1])
+  }
+    // var items = Object.keys(champion_winrates).map(function(key) {
+    //   return [key, champion_winrates[key]];
+    // });
+    
+    // Sort the array based on the second element
+    // items.sort(function(first, second) {
+    //   return second[1] - first[1];
+    // });
+    res.json({'winrate':champion_winrates,'win':win,'loss':loss});
 }
-async function loadGame(req,res){
+
+
+
+async function loadGameBDD(name){
   var games=[]
   try{
-    player = await models.Summoner.findOne({lowerName: req.body.name.toLowerCase()})
-    for(gameId of player.GamesIdList){
-      games.push(await models.Game.findOne({_id: gameId}))
+    player = await models.Summoner.findOne({lowerName: name.toLowerCase()})
+    if(player){
+      for(gameId of player.GamesIdList){
+        games.push(await models.Game.findOne({_id: gameId}))
+      }
     }
   }
   catch(e){
     console.error(e);
   }finally{
-    res.json(games)
+    return games
   }
+}
+
+async function loadGame(req,res){
+  games = await loadGameBDD(req.body.name.trim())
+  res.json(games)
 }
 
 async function insertGame(game){
@@ -339,7 +340,6 @@ async function insertGameInPlayer(game){
 }
 async function updatePlayer(summo){
   try{
-    console.log(summo)
     await models.Summoner.updateOne(
     { accountId: summo.accountId }, 
     { $set: { 
@@ -389,3 +389,4 @@ module.exports.generateHTML = generateHTML;
 module.exports.updateAll = updateAll;
 module.exports.winrateChamp = winrateChamp;
 module.exports.loadGame = loadGame;
+module.exports.ChampionIdToName = ChampionIdToName

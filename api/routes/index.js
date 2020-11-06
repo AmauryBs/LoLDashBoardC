@@ -17,6 +17,10 @@ router.get('/winrateChamp', (req, res) => {
     controller.winrateChamp(req, res);
 });
 
+router.get('/ChampionIdToName', (req, res) => {
+    controller.ChampionIdToName(req, res);
+});
+
 
 module.exports = router;
 
