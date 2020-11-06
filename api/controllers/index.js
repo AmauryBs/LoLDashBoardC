@@ -254,15 +254,15 @@ async function winrateChamp(req, res){
     result = await winrateChampOne(match, req.body.accountId)
     await matchCalc(result[0], result[1])
   }
-    // var items = Object.keys(champion_winrates).map(function(key) {
-    //   return [key, champion_winrates[key]];
-    // });
+    var items = Object.keys(champion_winrates).map(function(key) {
+      return [key, champion_winrates[key]];
+    });
     
-    // Sort the array based on the second element
-    // items.sort(function(first, second) {
-    //   return second[1] - first[1];
-    // });
-    res.json({'winrate':champion_winrates,'win':win,'loss':loss});
+    //Sort the array based on the second element
+    items.sort(function(first, second) {
+      return second[1][2] - first[1][2];
+    });
+    res.json({'winrate':items,'win':win,'loss':loss});
 }
 
 
