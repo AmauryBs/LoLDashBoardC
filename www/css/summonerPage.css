@@ -48,16 +48,55 @@
 }
 .lvl
 {
+    color:white;
     position:absolute;        
     bottom:0;
     left: 0;
     transform: translate(0,45%);
-    padding-left: 75px;
+    margin-left: 37%;
+    background: url(../img/bg-levelbox.png);
 }
 
 .account
 {
     margin-bottom: 2em;
+}
+
+.gameContent
+{
+    border: 2px solid;
+
+    display: flex;
+    flex:0 0 auto;
+    flex-direction: row;
+}
+
+.gameContent article {
+    display: flex;
+    flex:0 0 auto;
+    flex-direction: row;
+    padding:2px 5px;
+}
+
+
+.gameContent article.summonerStats {
+    
+    display: flex;
+    flex:0 0 auto;
+    flex-direction: row;
+
+    padding:2px 5px;
+}
+
+.gameContent article div {
+    
+    padding:2px 5px;
+}
+
+.gameContent article.teams div p {
+    
+    padding:0px 0px;
+    margin: 0px;
 }
 
 
