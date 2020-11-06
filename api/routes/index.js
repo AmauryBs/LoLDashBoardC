@@ -17,14 +17,18 @@ router.post('/gameHistory', (req, res) => {
     controller.historyInfo(req, res);
 });
 
-router.get('/winrateChamp', (req, res) => {
-    controller.winrateChamp(req, res);
+router.get('/loadGame', (req, res) => {
+    controller.loadGame(req, res);
 });
 
 router.get('/ChampionIdToName', (req, res) => {
     controller.ChampionIdToName(req, res);
 });
 
+
+router.get('/winrateChamp', (req, res) => {
+    controller.winrateChamp(req, res);
+});
 
 module.exports = router;
 
