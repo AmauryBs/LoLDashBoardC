@@ -68,7 +68,23 @@ async function dataSummoner(id, byName){
 }
 
 
+
 async function insertSummoner(summo){
+
+/*function requestProfile(name, callback) {
+    url = encodeURI('https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/' + name + '?api_key=' + process.env.API_KEY);
+    request(url, function (error, response, body) {
+        if (!error && response.statusCode == 200) {
+
+            var val = JSON.parse(body);
+        } else {
+            var val = 'undefined';
+        }
+        callback(val);
+    });
+
+  }*/
+
 
   const newSummoner = models.Summoner({
     _id : summo.id,
@@ -89,10 +105,12 @@ async function insertSummoner(summo){
     }
 }
 
+
 async function requestProfile(id, byName){
   var url = ""
   if(byName){
-    url= encodeURI('https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/'+id);
+    url= encodeURI('https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/'+name);
+
   }else{
     url= encodeURI('https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-account/'+id);
   }
@@ -284,6 +302,7 @@ async function loadGameBDD(name){
   }
 }
 
+
 async function loadGame(req,res){
   games = await loadGameBDD(req.body.name.trim())
   res.json(games)
@@ -310,6 +329,26 @@ async function insertGame(game){
   }catch(e){
       console.error(e.error);
     }
+
+function historyInfo(req, res){
+  requestProfile(req.body.name, function (result) {
+    if (result != 'undefined' && result != undefined) {
+        var id = result.id
+        var data = result
+    
+  gameHistory(req.body.queueId,data.accountId, req.body.endIndex,function(gameHisto){
+    history=[]
+    var bar = new Promise((resolve, reject) =>{ gameHisto.matches.forEach((element, index, array) => 
+        gameInfo(element.gameId,function(result){
+        history.push(result)
+        if (index === array.length -1) resolve();
+      })
+      );});
+      bar.then(() => {res.json(history);});
+  })
+}
+});
+
 }
 
 async function insertGameInPlayer(game){
@@ -386,7 +425,12 @@ async function updateAll(req, res){
 }
 
 module.exports.generateHTML = generateHTML;
+
 module.exports.updateAll = updateAll;
+
+module.exports.historyInfo = historyInfo;
+module.exports.ChampionIdToName = ChampionIdToName;
+
 module.exports.winrateChamp = winrateChamp;
 module.exports.loadGame = loadGame;
 module.exports.ChampionIdToName = ChampionIdToName
