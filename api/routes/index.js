@@ -30,6 +30,13 @@ router.get('/winrateChamp', (req, res) => {
     controller.winrateChamp(req, res);
 });
 
+router.get('/ServerStatus', (req, res) => {
+    controller.ServerStatus(req, res);
+});
+
+router.get('/Challenger', (req, res) => {
+    controller.Challenger(req, res);
+});
 module.exports = router;
 
 

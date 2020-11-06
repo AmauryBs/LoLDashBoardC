@@ -184,6 +184,47 @@ async function gameInfo(matchid){
   }
 }
 
+async function ServerStatus(req, res){
+  url= encodeURI('https://euw1.api.riotgames.com/lol/status/v3/shard-data');
+  var serviceStatus={}
+  try{
+    var result = await requestP({'url': url, 'headers': headers})
+    result = JSON.parse(result) 
+    console.log(result.services)
+    for( const service of result.services){
+      name = service.name
+      status = service.status
+      serviceStatus[name] =status
+    };
+  }catch(e){
+    console.error(e);
+    result = "error"
+  } finally {
+    res.json(serviceStatus)
+  }
+}
+
+async function Challenger(req, res){
+  if(req.body.queue == 'FLEX'){
+    url= encodeURI('https://euw1.api.riotgames.com/lol/league/v4/challengerleagues/by-queue/RANKED_FLEX_SR');
+  }else{
+    url= encodeURI('https://euw1.api.riotgames.com/lol/league/v4/challengerleagues/by-queue/RANKED_SOLO_5x5');
+  }
+  try{
+    var result = await requestP({'url': url, 'headers': headers})
+    result = JSON.parse(result) 
+    players = result.entries
+    players.sort(function(first, second) {
+      return second["leaguePoints"] - first["leaguePoints"];
+    });
+  }catch(e){
+    console.error(e);
+    players = "error"
+  } finally {
+    res.json(players)
+  }
+}
+
 async function ChampionIdToName(req, res){
   id = req.body.id
   url= encodeURI('https://ddragon.leagueoflegends.com/api/versions.json');
@@ -390,3 +431,5 @@ module.exports.updateAll = updateAll;
 module.exports.winrateChamp = winrateChamp;
 module.exports.loadGame = loadGame;
 module.exports.ChampionIdToName = ChampionIdToName;
+module.exports.ServerStatus = ServerStatus;
+module.exports.Challenger = Challenger;
