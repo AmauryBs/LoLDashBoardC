@@ -11,7 +11,11 @@ $(document).ready(function () {
         }
 
     });
-
+    $('.updateButton').on( "click",function(){
+        let accId = $('.updateButton').attr('value');
+        //console.log(accId+"ok");
+        updateAll(accId);
+    });
 
 
 
@@ -23,11 +27,11 @@ $(document).ready(function () {
 function loadHistory(name) {
 
     $.ajax({
-        url: "/gameHistory",
+        url: "/loadGame",
         type: "POST",
         cache: false,
         data: { 'name': name, 'queueId': -1, 'endIndex': 10 },
-        dataType: 'JSON'
+        dataType: 'JSON',
     }).done(function (games, name) {
         console.log(games);
         displayGameHistory(games, name);
@@ -36,23 +40,33 @@ function loadHistory(name) {
 }
 
 
-/*
+
 function ChampionIdToName(championID) {
 
     $.ajax({
-        url: "/getChampionName",
-        type: "GET",
+        url: "/ChampionIdToName",
+        type: "POST",
         cache: false,
         data: { 'id': championID },
         dataType: 'JSON'
     }).done(function (name) {
-        console.log("ok?");
-        //return name;
+        $('.championName').html(name);
+
+    });
+    
+}4
+function updateAll(accId) {
+
+    $.ajax({
+        url: "/update",
+        type: "POST",
+        cache: false,
+        data: { 'accountId': accId ,'queueId': -1, 'endIndex': 12},
+        dataType: 'JSON',
+    }).done(function () {
 
     });
 }
-*/
-
 function displayGameHistory(games, name) {
     games.forEach(game => {
 
@@ -158,8 +172,12 @@ function displayGameHistory(games, name) {
         //Display GameType
         gameStats.append($('<span/>', { class: "gameDurationTime", html: "Time " + gameDurationTime }));
 
+        //display champion
+        let championInfos = $("<article/>", { class: "championInfos" });
+        ChampionIdToName(game.participants[partId-1].championId);
+        championInfos.append($('<div/>', { class: "championName", html: "" }));
 
-        //e colonne summoner Stats (KDA, multiKill, sbires...)
+        // colonne summoner Stats (KDA, multiKill, sbires...)
         let summonerStats = $("<article/>", { class: "summonerStats" });
         summonerStats.append($('<div/>', { class: "KDA", title: "KDA", html: [KDA, KDAratio, killAchievement] }));
         let othersummonerStats = level.append(CS);
@@ -173,7 +191,7 @@ function displayGameHistory(games, name) {
         //dernière colonne team 200
         teams.append(team200);
 
-        let content = [gameStats, summonerStats, teams];
+        let content = [gameStats,championInfos, summonerStats, teams];
         $("#gameHistory").append($("<div/>", { id: "gameContent" + game.gameId, class: "gameContent", html: content }))
 
     });
