@@ -22,12 +22,10 @@ function generateHTML(req, res) {
             var id = result.id
             var data = result
         } else {
-
             console.log('cannot find summoner: ' + req.body.name)
             res.render('pages/summonerPage');
             return;
         }
-
         requestRanked(id, function (ranked) {
             if (ranked != 'undefined' &&ranked != undefined) {
                 data = Object.assign({ 'account': data }, { 'ranked': ranked })

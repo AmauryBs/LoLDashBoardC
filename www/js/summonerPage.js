@@ -97,39 +97,57 @@ function displayGameHistory(games, name) {
         let deaths = game.participants[partId - 1].stats.deaths;
         let assists = game.participants[partId - 1].stats.assists;
 
-        var KDA =  $("<div/>", { class: "KDAStats", html:"<span>" + kills + "</span> / <span>" + deaths + "</span> / <span>" + assists + "</span>"});
-        var KDAratio =  $("<span/>", { class: "KDARation", html:Math.round(((kills+assists)/deaths) * 100) / 100 +":1"});
+        var KDA = $("<div/>", { class: "KDAStats", html: "<span>" + kills + "</span> / <span>" + deaths + "</span> / <span>" + assists + "</span>" });
+        var KDAratio = $("<span/>", { class: "KDARation", html: Math.round(((kills + assists) / deaths) * 100) / 100 + ":1" });
         //did he get multiple kill
-        var multiKills ="";
-        if(game.participants[partId - 1].stats.pentaKills >0)
-        {
+        var multiKills = "";
+        if (game.participants[partId - 1].stats.pentaKills > 0) {
             multiKills = "Penta Kills";
         }
-        else if(game.participants[partId - 1].stats.tripleKills >0)
-        {
+        else if (game.participants[partId - 1].stats.tripleKills > 0) {
             multiKills = "Triple Kills";
         }
-        else if(game.participants[partId - 1].stats.quadraKills >0)
-        {
+        else if (game.participants[partId - 1].stats.quadraKills > 0) {
             multiKills = " Quadra Kills";
         }
-        else if(game.participants[partId - 1].stats.doubleKills >0)
-        {
+        else if (game.participants[partId - 1].stats.doubleKills > 0) {
             multiKills = "Double Kills";
         }
 
-        var killAchievement =  $("<div/>", { class: "killAchievement", multiKills});
+        var killAchievement = $("<div/>", { class: "killAchievement", multiKills });
 
         //level 
-        var level = $("<div/>", { class: "champLevel", html:game.participants[partId - 1].stats.champLevel});
+        var level = $("<div/>", { class: "champLevel", html: " Niveau " + game.participants[partId - 1].stats.champLevel });
 
         //CS on minions
-        let CSContent = $('<span/>', { class: "CS tip",html:game.participants[partId - 1].stats.totalMinionsKilled +" sbires tués"});
-        var CS = $('<div/>', { class: "CS", html:CSContent});
-        
+        let CSContent = $('<span/>', { class: "CS tip", html: game.participants[partId - 1].stats.totalMinionsKilled + " sbires tués" });
+        var CS = $('<div/>', { class: "CS", html: CSContent });
+
+        //Teams
+        let team100 = $("<div/>", { class: "team100" });
+        let team200 = $("<div/>", { class: "team200" });
+
+        for (let i = 0; i < game.participantIdentities.length; i++) {
+            
+            let playerName = game.participantIdentities[i].player.summonerName;
+            var hiddenInput = $('<input/>',{type:"hidden", name:"name",value:playerName});
+            var a = $('<a/>',{href:"#",onclick:"document.getElementById('form"+playerName+"').submit()", html:playerName})
+            //var a = $('<button/>',{type:"submit", html:playerName})
+            var form = $('<form/>',{id : "form"+playerName, method : "post", action:"/summonerPage"})
+            
+            form.append(hiddenInput);
+            form.append(a);
+            if (game.participants[i].teamId == 100) {
+                
+                team100.append($('<p/>', { class: "participant", html: form }));
+            }
+            else{
+                team200.append($('<p/>', { class: "participant", html: form }));
+            }
+        }
 
         /*
-        Append succesifs dans l'article correspondant à une game
+        
         */
         //première colonne avec un article avec les stats générales de la game
         let gameStats = $("<article/>", { class: "gameStats" });
@@ -141,14 +159,21 @@ function displayGameHistory(games, name) {
         gameStats.append($('<span/>', { class: "gameDurationTime", html: "Time " + gameDurationTime }));
 
 
-        //summoner Stats (KDA, multiKill, sbires...)
+        //e colonne summoner Stats (KDA, multiKill, sbires...)
         let summonerStats = $("<article/>", { class: "summonerStats" });
-        summonerStats.append($('<div/>', { class: "KDA", title: "KDA", html: [KDA,KDAratio,killAchievement]}));
+        summonerStats.append($('<div/>', { class: "KDA", title: "KDA", html: [KDA, KDAratio, killAchievement] }));
         let othersummonerStats = level.append(CS);
-        summonerStats.append($('<div/>', { class: "CS", html: othersummonerStats}));
+        summonerStats.append($('<div/>', { class: "CS", html: othersummonerStats }));
 
 
-        let content = [gameStats,summonerStats];
+        let teams = $("<article/>", { class: "teams" });
+        //avant dernière colonne team 100
+        teams.append(team100);
+
+        //dernière colonne team 200
+        teams.append(team200);
+
+        let content = [gameStats, summonerStats, teams];
         $("#gameHistory").append($("<div/>", { id: "gameContent" + game.gameId, class: "gameContent", html: content }))
 
     });
@@ -171,4 +196,14 @@ function secondsToHms(d) {
         }
     }
     return hDisplay.toString() + mDisplay.toString() + sDisplay.toString();
+}
+
+function redirectOnOtherSummoner(name){
+    $.ajax({
+        url: "/summonerPage",
+        type: "POST",
+        cache: false,
+        data: { 'name': name},
+        dataType: 'JSON'
+    });
 }
