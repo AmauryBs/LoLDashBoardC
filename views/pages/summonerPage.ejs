@@ -97,17 +97,16 @@
                     </div>
                 <% } %>
 
-                <% if (locals.account) { %>
                 <section class="container-fluid account">
                     
                     <div class="row" >
                         <div class="col-auto" id="colleftleft">
-                            <img class="profileIcon" src="http://ddragon.leagueoflegends.com/cdn/10.19.1/img/profileicon/<%= account.profileIconId %>.png">
-                            <span class="lvl">&nbsp;&nbsp;<b><%= account.summonerLevel%></b>&nbsp;&nbsp;</span>
+                            <img class="profileIcon" src="http://ddragon.leagueoflegends.com/cdn/10.19.1/img/profileicon/<%= profileIconId %>.png">
+                            <span class="lvl">&nbsp;&nbsp;<b><%= summonerLevel%></b>&nbsp;&nbsp;</span>
                         </div>
                         <div class="col-auto " id="colleftmiddle">
                             <p>Summoner name : </p>
-                            <%= account.name %>
+                            <%= name %>
 
                         </div>
                         <div class="col"  id="colcenter">
@@ -119,11 +118,11 @@
                             </span>
                         </div>
                         <div class="col-auto" id="colright">
-                            <button type="button" class="btn btn-dark updateButton">UPDATE</button>
+                            <button type="button" class="btn btn-dark updateButton" value="<%=accountId%>">UPDATE</button>
                         </div>
                     </div>
                 </section>
-                 <% } %>
+
 
 
                 <section class="container-fluid">
@@ -198,7 +197,7 @@
                         </div>
                         <div id="gameHistory" class="col-auto border border-dark">
                             <script>
-                                let accName = '<%=account.name%>';
+                                let accName = '<%=name%>';
                                 accName.toString();
                                 loadHistory(accName); 
 
