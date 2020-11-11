@@ -11,11 +11,16 @@ router.post('/update', (req, res) => {
 
 router.post('/loadGame', (req, res) => {
     controller.loadGame(req, res);
-});
 
+});
 
 router.get('/winrateChamp', (req, res) => {
     controller.winrateChamp(req, res);
+
+});
+
+router.post('/gameHistory', (req, res) => {
+    controller.historyInfo(req, res);
 });
 
 router.post('/ChampionIdToName', (req, res) => {
@@ -24,3 +29,6 @@ router.post('/ChampionIdToName', (req, res) => {
 
 
 module.exports = router;
+
+
+
