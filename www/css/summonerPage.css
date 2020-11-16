@@ -65,7 +65,7 @@
 .gameContent
 {
     border: 2px solid;
-
+    margin : 5px 2px;
     display: flex;
     flex:0 0 auto;
     flex-direction: row;
@@ -97,6 +97,18 @@
     
     padding:0px 0px;
     margin: 0px;
+}
+
+.Win
+{
+    background-color: #a3cfec;
+    border-color: #99b9cf;
+}
+
+.Fail
+{
+    background-color: #e2b6b3;
+    border-color: #cea7a7;
 }
 
 

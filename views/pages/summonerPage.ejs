@@ -97,17 +97,17 @@
                     </div>
                 <% } %>
 
-                <% if (locals.account) { %>
+                <% if (locals) { %>
                 <section class="container-fluid account">
                     
                     <div class="row" >
                         <div class="col-auto" id="colleftleft">
-                            <img class="profileIcon" src="http://ddragon.leagueoflegends.com/cdn/10.19.1/img/profileicon/<%= account.profileIconId %>.png">
-                            <span class="lvl">&nbsp;&nbsp;<b><%= account.summonerLevel%></b>&nbsp;&nbsp;</span>
+                            <img class="profileIcon" src="http://ddragon.leagueoflegends.com/cdn/10.19.1/img/profileicon/<%=profileIconId %>.png">
+                            <span class="lvl">&nbsp;&nbsp;<b><%=summonerLevel%></b>&nbsp;&nbsp;</span>
                         </div>
                         <div class="col-auto " id="colleftmiddle">
                             <p>Summoner name : </p>
-                            <%= account.name %>
+                            <span id="summonerName"><%=name %></span>
 
                         </div>
                         <div class="col"  id="colcenter">
@@ -119,7 +119,7 @@
                             </span>
                         </div>
                         <div class="col-auto" id="colright">
-                            <button type="button" class="btn btn-dark updateButton">UPDATE</button>
+                            <button id="updateButton" type="button" class="btn btn-dark updateButton" value=<%=accountId%>>UPDATE</button>
                         </div>
                     </div>
                 </section>
@@ -198,9 +198,9 @@
                         </div>
                         <div id="gameHistory" class="col-auto border border-dark">
                             <script>
-                                let accName = '<%=account.name%>';
+                                let accName = '<%=name%>';
                                 accName.toString();
-                                loadHistory(accName); 
+                                loadGame(accName); 
 
                             </script>
                         </div>

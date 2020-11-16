@@ -1,4 +1,5 @@
 $(document).ready(function () {
+    window.nbUpdate=1;
     if ($(window).width() > 1200) {
         var margin = $('#colleftleft').width() + $('#colleftmiddle').width() - $('#colright').width();
         $('.centerButtons').css('left', $('#colcenter').width() / 2 - margin);
@@ -12,18 +13,21 @@ $(document).ready(function () {
 
     });
 
+    $("#updateButton").on("click",function(){
+        let accId = $(this).val();
+        console.log("Loading 10 games");
+        updateGame(accId,10);
+    });
 
 
 
-
-
+    
 });
 
-
-function loadHistory(name) {
-
+function loadGame(name) {
+    
     $.ajax({
-        url: "/gameHistory",
+        url: "/loadGame",
         type: "POST",
         cache: false,
         data: { 'name': name, 'queueId': -1, 'endIndex': 10 },
@@ -31,6 +35,25 @@ function loadHistory(name) {
     }).done(function (games, name) {
         console.log(games);
         displayGameHistory(games, name);
+        $("#updateButton").attr('disabled',false);
+        $("#updateButton").text('Update');
+
+    });
+}
+
+function updateGame(accID,endIndex) {
+    $("#updateButton").attr('disabled',true);
+    $("#updateButton").text('Loading');
+    $.ajax({
+        url: "/update",
+        type: "POST",
+        cache: false,
+        data: { 'accountId': accID, 'queueId': -1, 'endIndex': endIndex },
+        dataType: 'JSON'
+    }).done(function () {
+        console.log("done");
+        
+        loadGame($("#summonerName").html());
 
     });
 }
@@ -54,6 +77,14 @@ function ChampionIdToName(championID) {
 */
 
 function displayGameHistory(games, name) {
+    if (games.length <10 && window.nbUpdate==1)
+    {
+        $("#updateButton").attr('disabled',true);
+        $("#updateButton").text('Loading');
+        window.nbUpdate=0;
+        console.log("Loading "+10 - games.length+" games");
+        updateGame($('#updateButton').val(),10 - games.length);
+    }
     games.forEach(game => {
 
 
@@ -114,7 +145,7 @@ function displayGameHistory(games, name) {
             multiKills = "Double Kills";
         }
 
-        var killAchievement = $("<div/>", { class: "killAchievement", multiKills });
+        var killAchievement = $("<div/>", { class: "killAchievement", html : multiKills });
 
         //level 
         var level = $("<div/>", { class: "champLevel", html: " Niveau " + game.participants[partId - 1].stats.champLevel });
@@ -174,7 +205,9 @@ function displayGameHistory(games, name) {
         teams.append(team200);
 
         let content = [gameStats, summonerStats, teams];
-        $("#gameHistory").append($("<div/>", { id: "gameContent" + game.gameId, class: "gameContent", html: content }))
+        let gameContent = $("<div/>", { id: "gameContent" + game._id, class: "gameContent", html: content });
+        gameContent.addClass(result); // set la Class Win ou Fail
+        $("#gameHistory").append(gameContent)
 
     });
 
