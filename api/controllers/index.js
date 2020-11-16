@@ -180,7 +180,7 @@ async function gameInfo(matchid){
     console.error(e.error);
     result = "error"
   } finally {
-    return new Promise(resolve => {resolve(JSON.parse(result))})
+    return JSON.parse(result)
   }
 }
 
