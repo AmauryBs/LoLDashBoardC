@@ -13,7 +13,7 @@ router.post('/loadGame', (req, res) => {
     controller.loadGame(req, res);
 });
 
-router.get('/ChampionIdToName', (req, res) => {
+router.post('/ChampionIdToName', (req, res) => {
     controller.ChampionIdToName(req, res);
 });
 
