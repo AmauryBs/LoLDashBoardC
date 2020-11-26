@@ -37,6 +37,11 @@ router.post('/ServerStatus', (req, res) => {
 router.post('/Challenger', (req, res) => {
     controller.Challenger(req, res);
 });
+
+router.post('/getAverageStats', (req, res) => {
+    controller.getAverageStats(req, res);
+});
+
 module.exports = router;
 
 

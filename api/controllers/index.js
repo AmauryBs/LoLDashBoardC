@@ -325,6 +325,84 @@ async function loadGameBDD(name){
   }
 }
 
+
+async function getAverageStats(req,res){
+  games = await loadGameBDD(req.body.name.trim())
+  profile = await requestProfile(req.body.name.trim(),true)
+  accountId = profile.accountId
+  var topStats = {k:0,d:0,a:0,cs:0,dmg:0,game:0,vision:0, gold:0}
+  var jnglStats = {k:0,d:0,a:0,cs:0,dmg:0,game:0,vision:0, gold:0}
+  var midStats = {k:0,d:0,a:0,cs:0,dmg:0,game:0,vision:0, gold:0}
+  var botStats = {k:0,d:0,a:0,cs:0,dmg:0,game:0,vision:0, gold:0}
+  var suppStats = {k:0,d:0,a:0,cs:0,dmg:0,game:0,vision:0, gold:0}
+  var participantID = -1 
+  for(game of games){
+    for( const player of game.participantIdentities){
+      if (player.player.accountId == accountId){
+        participantID = player.participantId - 1
+      }
+    };
+    //console.log(game.participants[participantID])
+    var lane = game.participants[participantID]["timeline"]["lane"]
+    switch (lane) {
+
+      case "TOP":
+        topStats['k'] += game.participants[participantID]["stats"]["kills"]
+        topStats['d'] += game.participants[participantID]["stats"]["deaths"]
+        topStats['a'] += game.participants[participantID]["stats"]["assists"]
+        topStats['cs'] += game.participants[participantID]["stats"]["totalMinionsKilled"]
+        topStats['dmg'] += game.participants[participantID]["stats"]["totalDamageDealtToChampions"]
+        topStats['vision'] += game.participants[participantID]["stats"]["visionScore"]
+        topStats['gold'] += game.participants[participantID]["stats"]["goldEarned"]
+        topStats['game'] += 1
+
+      case "JUNGLE":
+        jnglStats['k'] += game.participants[participantID]["stats"]["kills"]
+        jnglStats['d'] += game.participants[participantID]["stats"]["deaths"]
+        jnglStats['a'] += game.participants[participantID]["stats"]["assists"]
+        jnglStats['cs'] += game.participants[participantID]["stats"]["totalMinionsKilled"]
+        jnglStats['dmg'] += game.participants[participantID]["stats"]["totalDamageDealtToChampions"]
+        jnglStats['vision'] += game.participants[participantID]["stats"]["visionScore"]
+        jnglStats['gold'] += game.participants[participantID]["stats"]["goldEarned"]
+        jnglStats['game'] += 1
+
+      case "MIDDLE":
+        midStats['k'] += game.participants[participantID]["stats"]["kills"]
+        midStats['d'] += game.participants[participantID]["stats"]["deaths"]
+        midStats['a'] += game.participants[participantID]["stats"]["assists"]
+        midStats['cs'] += game.participants[participantID]["stats"]["totalMinionsKilled"]
+        midStats['dmg'] += game.participants[participantID]["stats"]["totalDamageDealtToChampions"]
+        midStats['vision'] += game.participants[participantID]["stats"]["visionScore"]
+        midStats['gold'] += game.participants[participantID]["stats"]["goldEarned"]
+        midStats['game'] += 1
+
+      case "BOTTOM":
+        if (game.participants[participantID]["timeline"]["role"] == "DUO_CARRY"){
+          botStats['k'] += game.participants[participantID]["stats"]["kills"]
+          botStats['d'] += game.participants[participantID]["stats"]["deaths"]
+          botStats['a'] += game.participants[participantID]["stats"]["assists"]
+          botStats['cs'] += game.participants[participantID]["stats"]["totalMinionsKilled"]
+          botStats['dmg'] += game.participants[participantID]["stats"]["totalDamageDealtToChampions"]
+          botStats['vision'] += game.participants[participantID]["stats"]["visionScore"]
+          botStats['gold'] += game.participants[participantID]["stats"]["goldEarned"]
+          botStats['game'] += 1
+        }else{
+          suppStats['k'] += game.participants[participantID]["stats"]["kills"]
+          suppStats['d'] += game.participants[participantID]["stats"]["deaths"]
+          suppStats['a'] += game.participants[participantID]["stats"]["assists"]
+          suppStats['cs'] += game.participants[participantID]["stats"]["totalMinionsKilled"]
+          suppStats['dmg'] += game.participants[participantID]["stats"]["totalDamageDealtToChampions"]
+          suppStats['vision'] += game.participants[participantID]["stats"]["visionScore"]
+          suppStats['gold'] += game.participants[participantID]["stats"]["goldEarned"]
+          suppStats['game'] += 1
+        }
+
+    }
+  }
+  averageStats = {"TOP":topStats, "JUNGLE":jnglStats, "MIDDLE":midStats,  "DUO_CARRY":botStats, "DUO_SUPPORT":[]}
+  res.json(averageStats)
+}
+
 async function loadGame(req,res){
   games = await loadGameBDD(req.body.name.trim())
   res.json(games)
@@ -433,3 +511,4 @@ module.exports.loadGame = loadGame;
 module.exports.ChampionIdToName = ChampionIdToName;
 module.exports.ServerStatus = ServerStatus;
 module.exports.Challenger = Challenger;
+module.exports.getAverageStats = getAverageStats;

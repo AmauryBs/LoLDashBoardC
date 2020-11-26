@@ -1,4 +1,5 @@
 $(document).ready(function () {
+    window.nbUpdate = 1;
     if ($(window).width() > 1200) {
         var margin = $('#colleftleft').width() + $('#colleftmiddle').width() - $('#colright').width();
         $('.centerButtons').css('left', $('#colcenter').width() / 2 - margin);
@@ -12,18 +13,21 @@ $(document).ready(function () {
 
     });
 
-
+    $("#updateButton").on("click", function () {
+        let accId = $(this).val();
+        console.log("Loading 10 games");
+        updateGame(accId, 10);
+    });
 
 
 
 
 });
 
-
-function loadHistory(name) {
+function loadGame(name) {
 
     $.ajax({
-        url: "/gameHistory",
+        url: "/loadGame",
         type: "POST",
         cache: false,
         data: { 'name': name, 'queueId': -1, 'endIndex': 10 },
@@ -31,29 +35,56 @@ function loadHistory(name) {
     }).done(function (games, name) {
         console.log(games);
         displayGameHistory(games, name);
+        $("#updateButton").attr('disabled', false);
+        $("#updateButton").text('Update');
 
     });
 }
 
-
-/*
-function ChampionIdToName(championID) {
+function updateGame(accID, endIndex) {
+    console.log("update");
+    $("#updateButton").attr('disabled', true);
+    $("#updateButton").text('Loading');
 
     $.ajax({
-        url: "/getChampionName",
-        type: "GET",
+        url: "/update",
+        type: "POST",
+        cache: false,
+        data: { 'accountId': accID, 'queueId': -1, 'endIndex': endIndex },
+        dataType: 'JSON'
+    }).done(function () {
+        console.log("done");
+
+        loadGame($("#summonerName").html());
+
+    });
+}
+
+function ChampionIdToName(championID,CSSclass) {
+
+    $.ajax({
+        url: "/ChampionIdToName",
+        type: "POST",
         cache: false,
         data: { 'id': championID },
         dataType: 'JSON'
-    }).done(function (name) {
-        console.log("ok?");
-        //return name;
-
+    }).done(function (champName) {
+            displayChampName(champName,CSSclass);
     });
 }
-*/
+
+function displayChampName(champName,CSSclass){
+    $('.'+CSSclass+'').html(champName);
+}
 
 function displayGameHistory(games, name) {
+    if (games.length < 10 && window.nbUpdate == 1) {
+        window.nbUpdate = 0;
+        console.log(10 - games.length);
+        $("#updateButton").attr('disabled', true);
+        $("#updateButton").text('Loading');
+        updateGame($('#updateButton').val(), 10 - games.length);
+    }
     games.forEach(game => {
 
 
@@ -81,13 +112,6 @@ function displayGameHistory(games, name) {
         //temps de jeu
         let gameDurationTime = secondsToHms(game.gameDuration);
 
-        //get champion name and his picture
-        /*
-        let champName = "Unknown";
-        let championId = game.participants[partId - 1].championId;
-        champName = ChampionIdToName(championId);*/ //ON VERRA PLUS TARD
-
-
         //get spells and their pictures
 
         //get runes and their pictures
@@ -114,7 +138,7 @@ function displayGameHistory(games, name) {
             multiKills = "Double Kills";
         }
 
-        var killAchievement = $("<div/>", { class: "killAchievement", multiKills });
+        var killAchievement = $("<div/>", { class: "killAchievement", html: multiKills });
 
         //level 
         var level = $("<div/>", { class: "champLevel", html: " Niveau " + game.participants[partId - 1].stats.champLevel });
@@ -128,35 +152,44 @@ function displayGameHistory(games, name) {
         let team200 = $("<div/>", { class: "team200" });
 
         for (let i = 0; i < game.participantIdentities.length; i++) {
-            
+
             let playerName = game.participantIdentities[i].player.summonerName;
-            var hiddenInput = $('<input/>',{type:"hidden", name:"name",value:playerName});
-            var a = $('<a/>',{href:"#",onclick:"document.getElementById('form"+playerName+"').submit()", html:playerName})
+            var hiddenInput = $('<input/>', { type: "hidden", name: "name", value: playerName });
+            var a = $('<a/>', { href: "#", onclick: "document.getElementById('form" + playerName + "').submit()", html: playerName })
             //var a = $('<button/>',{type:"submit", html:playerName})
-            var form = $('<form/>',{id : "form"+playerName, method : "post", action:"/summonerPage"})
-            
+            var form = $('<form/>', { id: "form" + playerName, method: "post", action: "/summonerPage" })
+
             form.append(hiddenInput);
             form.append(a);
             if (game.participants[i].teamId == 100) {
-                
+
                 team100.append($('<p/>', { class: "participant", html: form }));
             }
-            else{
+            else {
                 team200.append($('<p/>', { class: "participant", html: form }));
             }
         }
 
-        /*
-        
-        */
         //première colonne avec un article avec les stats générales de la game
         let gameStats = $("<article/>", { class: "gameStats" });
+
         //Display GameType
         gameStats.append($('<div/>', { class: "gameType", title: game.gameMode, html: game.gameMode }));
         //Display Game Win or Fail
         gameStats.append($('<div/>', { class: "gameResult", html: result }));
         //Display GameType
         gameStats.append($('<span/>', { class: "gameDurationTime", html: "Time " + gameDurationTime }));
+
+        //Display gameSettingInfos
+        let gameSettingInfos = $("<article/>", { class: "gameSettingInfos"+ game._id });
+        //Display champName
+        gameSettingInfos.append($('<div/>', { class: "champName"}));
+
+        //get champion name
+        
+        let champName = "champName";
+        let championId = game.participants[partId - 1].championId;
+        champName = ChampionIdToName(championId,"gameSettingInfos"+ game._id); //ON VERRA PLUS TARD
 
 
         //e colonne summoner Stats (KDA, multiKill, sbires...)
@@ -173,8 +206,10 @@ function displayGameHistory(games, name) {
         //dernière colonne team 200
         teams.append(team200);
 
-        let content = [gameStats, summonerStats, teams];
-        $("#gameHistory").append($("<div/>", { id: "gameContent" + game.gameId, class: "gameContent", html: content }))
+        let content = [gameStats,gameSettingInfos, summonerStats, teams];
+        let gameContent = $("<div/>", { id: "gameContent" + game._id, class: "gameContent", html: content });
+        gameContent.addClass(result); // set la Class Win ou Fail
+        $("#gameHistory").append(gameContent)
 
     });
 
@@ -198,12 +233,12 @@ function secondsToHms(d) {
     return hDisplay.toString() + mDisplay.toString() + sDisplay.toString();
 }
 
-function redirectOnOtherSummoner(name){
+function redirectOnOtherSummoner(name) {
     $.ajax({
         url: "/summonerPage",
         type: "POST",
         cache: false,
-        data: { 'name': name},
+        data: { 'name': name },
         dataType: 'JSON'
     });
 }
