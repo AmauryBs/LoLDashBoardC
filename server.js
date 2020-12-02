@@ -24,6 +24,7 @@ app.use('/js',express.static(__dirname+'/www/js'));
 app.use('/css',express.static(__dirname+'/www/css'));
 app.use('/data',express.static(__dirname+'/www/data'));
 app.use('/img',express.static(__dirname+'/www/img'));
+app.use('/json',express.static(__dirname+'/www/json'));
 app.use('/views',express.static(__dirname+'/views/'));
 
 

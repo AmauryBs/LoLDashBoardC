@@ -1,6 +1,7 @@
 
 
 <script type="text/javascript" src="../../js/summonerPage.js"></script>
+<script type="text/javascript" src="../../js/inGame.js"></script>
 
 <% if (locals.in_game) { %>
 <script>
@@ -54,14 +55,16 @@
                         <% teamSize= in_game.participants.length/2
                         for (let i = 0; i < teamSize; i++) {%>
                             <tr>
+                                <td id = "name<%=i%>"> </td>
                                 <td id= "champion<%=i%>"> 
                                     <p class="champName"></p>
                                 </td>
-                                <td> <%=in_game.participants[i].spell1Id%> 
-                                </td>
-                                <td> <%=in_game.participants[i].spell2Id%> </td>
-                                <td> <%=in_game.participants[i].perks.perkIds[0]%> </td>
-                                <td> <%=in_game.participants[i].summonerName%> </td>
+                                <td id = "spell<%=i%>"></td>  
+                                <script>
+                                    linkPlayer("<%=in_game.participants[i].summonerName%>", "name<%=i%>")
+                                    fetchFromJson("/json/spell.json",<%=in_game.participants[i].spell1Id%>,"spell"+<%=i%>)
+                                    fetchFromJson("/json/spell.json",<%=in_game.participants[i].spell2Id%>,"spell"+<%=i%>)
+                                </script>
                             </tr>
                         <%}%>
                     </tr>
@@ -72,11 +75,16 @@
                             </div>
                             <% for (let i = 0; i < teamSize; i++) {%>
                                 <tr>
-                                    <td> <%=in_game.participants[ teamSize + i].championId%> </td>
-                                    <td> <%=in_game.participants[ teamSize +i].spell1Id%> </td>
-                                    <td> <%=in_game.participants[ teamSize +i].spell2Id%> </td>
-                                    <td> <%=in_game.participants[ teamSize +i].perks.perkIds[0]%> </td>
-                                    <td> <%=in_game.participants[ teamSize +i].summonerName%> </td>
+                                    <td id = "name<%=teamSize+i%>"> </td>
+                                    <td id= "champion<%=teamSize+i%>"> 
+                                        <p class="champName"></p>
+                                    </td>
+                                    <td id = "spell<%=teamSize+i%>"></td>  
+                                    <script>
+                                        linkPlayer("<%=in_game.participants[teamSize+i].summonerName%>", "name<%=teamSize+i%>")
+                                        fetchFromJson("/json/spell.json",<%=in_game.participants[teamSize+i].spell1Id%>,"spell"+<%=teamSize+i%>)
+                                        fetchFromJson("/json/spell.json",<%=in_game.participants[teamSize+i].spell2Id%>,"spell"+<%=teamSize+i%>)
+                                    </script>
                                 </tr>
                             <%}%>
                         </td>

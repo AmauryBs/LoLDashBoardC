@@ -15,27 +15,35 @@ headers = {
 }
 
 async function generateHTML(req, res) {
+  // Check that the name is not empty before doing any request
   if(req.body.name ==''){
     console.log('empty name')
     res.render('pages/summonerPage');
     return;
   }
+  // delete the whitespace elements at the beginning and at the end of the string
   name = req.body.name.trim()
+  // try to get the player from the database
   player = await models.Summoner.findOne({lowerName: name.toLowerCase()})
   if(player){
     game = await in_game(player.id)
+    //check if the player is currently in game
     if (game != 'error' && game!= undefined) {
       queue = await gameType(game.gameQueueConfigId)
       if(queue!=''){
         game.gameQueueConfigId = queue
       }
       player = Object.assign(player, {'in_game':game})
+      // send the data about the player and his current as a response
       res.render('pages/summonerPage',player);
     }else{
+      // just send the data about the player if he is not game
       res.render('pages/summonerPage',player);
     }
   }else{
+    // make a query to the riot api to get data about the player
     data = await dataSummoner(req.body.name, true)
+    // insert the player data in the database
     await insertSummoner(data)
     game = await in_game(data.id)
     if (game != 'undefined' && game!= undefined) {
@@ -52,6 +60,7 @@ async function generateHTML(req, res) {
 }
 
 async function dataSummoner(id, byName){
+  // get the profile of the player
   profile = await requestProfile(id, byName)
   if (profile != 'undefined'){
     var id = profile.id
@@ -60,6 +69,7 @@ async function dataSummoner(id, byName){
     console.log('cannot find summoner: ' + id)
     return({});
   }
+  // get the ranked informations of the player
   ranked = await requestRanked(id)
   if (ranked != 'undefined'){
     data = Object.assign(data, {'ranked':ranked})
@@ -133,6 +143,7 @@ async function in_game(id){
   }
 }
 
+// take the id of the queue (Int) and return the gameType (String)
 async function gameType(idQueue){
   url = 'http://static.developer.riotgames.com/docs/lol/queues.json';
   var res=''
@@ -154,6 +165,7 @@ async function gameType(idQueue){
   }
 }
 
+// return the game history which is a list of id of the last games of the given player in the given game type.
 async function gameHistory(queueId,accountId, endIndex){
   if (queueId !='-1'){
     url= encodeURI('https://euw1.api.riotgames.com/lol/match/v4/matchlists/by-account/' + accountId + '?queue=' + queueId +'&endIndex='+ endIndex);
@@ -171,6 +183,7 @@ async function gameHistory(queueId,accountId, endIndex){
     }
   }
 
+// return informations on the game with the given id
 async function gameInfo(matchid){
   url= encodeURI('https://euw1.api.riotgames.com/lol/match/v4/matches/' + matchid);
   var val=''
@@ -183,7 +196,7 @@ async function gameInfo(matchid){
     return JSON.parse(result)
   }
 }
-
+// return the status of tthe different services and their servers
 async function ServerStatus(req, res){
   url= encodeURI('https://euw1.api.riotgames.com/lol/status/v3/shard-data');
   var serviceStatus={}
@@ -203,7 +216,7 @@ async function ServerStatus(req, res){
     res.json(serviceStatus)
   }
 }
-
+// return a list of the top 100 best players of the server on either the ranked solo or the ranked flex queue
 async function Challenger(req, res){
   if(req.body.queue == 'FLEX'){
     url= encodeURI('https://euw1.api.riotgames.com/lol/league/v4/challengerleagues/by-queue/RANKED_FLEX_SR');
@@ -227,15 +240,18 @@ async function Challenger(req, res){
 
 async function ChampionIdToName(req, res){
   id = req.body.id
+  // check the latest version of the game
   url= encodeURI('https://ddragon.leagueoflegends.com/api/versions.json');
   try{
   var result = await requestP({'url': url, 'headers': headers})
   verslist = JSON.parse(result)
   vers = verslist[0] 
+  // return the latest version champion list 
   url2 = 'http://ddragon.leagueoflegends.com/cdn/'+ vers +'/data/en_US/champion.json'
   var champsIds = await requestP({'url': url2, 'headers': headers})
   champsIds = JSON.parse(champsIds)
   champions = {}
+  // search for the name of the champion with the given id 
   Object.keys(champsIds.data).forEach(champion =>{
     key = champsIds['data'][champion].key;
     champions[key] = champion;})
@@ -245,7 +261,7 @@ async function ChampionIdToName(req, res){
     res.json("error")
   } 
 }
-
+// return the win(or lose) and the champion of the player with the given account id on the given game
 async function winrateChampOne(matchinfo,accountId){
   var participantID;
   for( const player of matchinfo.participantIdentities){
@@ -266,6 +282,7 @@ async function winrateChampOne(matchinfo,accountId){
       }
 }
 
+// update the champion winrate list with the new result and the champion name
 function matchCalc(result, champion){
   if (result){
     win +=1
@@ -286,6 +303,8 @@ function matchCalc(result, champion){
   return(4)
 }
 
+
+// return the winrate on each champ of the given player
 async function winrateChamp(req, res){
   gameHisto = await loadGameBDD(req.body.name)
   win = 0
@@ -299,7 +318,7 @@ async function winrateChamp(req, res){
       return [key, champion_winrates[key]];
     });
     
-    //Sort the array based on the second element
+    //Sort the array based on the number of games
     items.sort(function(first, second) {
       return second[1][2] - first[1][2];
     });
@@ -307,7 +326,7 @@ async function winrateChamp(req, res){
 }
 
 
-
+// Load the games of the player with the given name from the database
 async function loadGameBDD(name){
   var games=[]
   try{
@@ -325,7 +344,7 @@ async function loadGameBDD(name){
   }
 }
 
-
+// return the Average stats of a player, on each roles
 async function getAverageStats(req,res){
   games = await loadGameBDD(req.body.name.trim())
   profile = await requestProfile(req.body.name.trim(),true)
@@ -337,6 +356,7 @@ async function getAverageStats(req,res){
   var suppStats = {k:0,d:0,a:0,cs:0,dmg:0,game:0,vision:0, gold:0}
   var participantID = -1 
   for(game of games){
+    // look for the participantID of the given player
     for( const player of game.participantIdentities){
       if (player.player.accountId == accountId){
         participantID = player.participantId - 1
@@ -344,8 +364,8 @@ async function getAverageStats(req,res){
     };
     //console.log(game.participants[participantID])
     var lane = game.participants[participantID]["timeline"]["lane"]
+    // update the stats of the player
     switch (lane) {
-
       case "TOP":
         topStats['k'] += game.participants[participantID]["stats"]["kills"]
         topStats['d'] += game.participants[participantID]["stats"]["deaths"]
@@ -431,10 +451,12 @@ async function insertGame(game){
     }
 }
 
+// Insert the gameID into each of the participant table (since we use mongoDB it's actually the player's document) in the BDD
 async function insertGameInPlayer(game){
   for(player of game.participantIdentities){
     try{
-      summo =await models.Summoner.findOne({lowerName: player.player.summonerName.toLowerCase()}) 
+      summo =await models.Summoner.findOne({lowerName: player.player.summonerName.toLowerCase()})
+      // check if the player is already in the database, if not, insert him
       if(summo){
         await models.Summoner.updateOne(
           { _id: player.player.summonerId }, 
@@ -457,6 +479,7 @@ async function insertGameInPlayer(game){
   }
   return('done')
 }
+// update a player's data in the database
 async function updatePlayer(summo){
   try{
     await models.Summoner.updateOne(
@@ -473,18 +496,21 @@ async function updatePlayer(summo){
     console.error(e)
   }
 }
-
+// update a player and his last games and insert them in the databases
 async function updateAll(req, res){
   try{
     summo = await models.Summoner.findOne({accountId: req.body.accountId})
     delta = new Date() - summo.lastUpdate
+    // limit updates to 1 every 2 minutes
     if(delta <= 120000 ){
       var minutes = Math.floor(delta / 60000);
       var seconds = ((delta % 60000) / 1000).toFixed(0);
       res.json('last update '+ minutes + ' min' + seconds + ' s ago you can only update every 2 minutes')
     }else{
+      // get the player's latest data
       data = await dataSummoner(summo.accountId, false)
       await updatePlayer(data)
+      // get the player's latest games
       gameHisto = await gameHistory(req.body.queueId,req.body.accountId, req.body.endIndex)
       for( match of gameHisto.matches){
         oneGame = await models.Game.findOne({_id: match.gameId})
