@@ -144,5 +144,36 @@ form .champOthers {
     text-align: center;
 }
 
+.killAchievements ul {
+    margin:0;
+    padding:0;
+    list-style-type:none;
+    text-align:center;
+}
+.killAchievements li {
+    float:left;
+    margin:auto;
+    padding:2px;
+    background-color:black;
+    color:white;
+    text-decoration:none;
+}
+
+.killAchievements ul li ul {
+    display:none;
+}
+
+.killAchievements ul li:hover ul {
+    display:block;
+}
+.killAchievements li:hover ul li {
+    float:none;
+}
+.killAchievements li ul {
+    position:absolute;
+}
+
+
+
 
 
