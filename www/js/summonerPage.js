@@ -60,7 +60,7 @@ function updateGame(accID, endIndex) {
     });
 }
 
-function ChampionIdToName(championID,CSSclass) {
+function ChampionIdToName(championID, CSSclass, nameImg="") {
 
     $.ajax({
         url: "/ChampionIdToName",
@@ -69,12 +69,26 @@ function ChampionIdToName(championID,CSSclass) {
         data: { 'id': championID },
         dataType: 'JSON'
     }).done(function (champName) {
-            displayChampName(champName,CSSclass);
+        if (nameImg == 'name')
+            displayChampName(champName, CSSclass);
+        else if (nameImg == 'img')
+            displayChampImg(champName, CSSclass);
+
+        else {
+            displayChampName(champName, CSSclass);
+            displayChampImg(champName, CSSclass);
+        }
+
     });
 }
 
-function displayChampName(champName,CSSclass){
-    $('.'+CSSclass+'').html(champName);
+function displayChampName(champName, CSSclass) {
+    $('#' + CSSclass + ' .champName').html(champName);
+    $('#' + CSSclass + ' .champImg').attr("src", "http://ddragon.leagueoflegends.com/cdn/10.24.1/img/champion/" + champName + ".png");
+}
+
+function displayChampImg(champName, CSSclass) {
+    $('#' + CSSclass + ' .champImg').attr("src", "http://ddragon.leagueoflegends.com/cdn/10.24.1/img/champion/" + champName + ".png");
 }
 
 function displayGameHistory(games, name) {
@@ -181,15 +195,21 @@ function displayGameHistory(games, name) {
         gameStats.append($('<span/>', { class: "gameDurationTime", html: "Time " + gameDurationTime }));
 
         //Display gameSettingInfos
-        let gameSettingInfos = $("<article/>", { class: "gameSettingInfos"+ game._id });
+        let gameSettingInfos = $("<article/>", { id: "gameSettingInfos" + game._id, class: "gameSettingInfos" });
+        let championDiv = $('<div/>', { class: "champion" })
         //Display champName
-        gameSettingInfos.append($('<div/>', { class: "champName"}));
+        championDiv.append($('<div/>', { class: "champName" }));
+        //Display champName
+        let imgdiv = $('<div/>');
+        imgdiv.append($('<img/>', { class: "champImg" }));
+        championDiv.append(imgdiv);
+        gameSettingInfos.append(championDiv);
 
         //get champion name
-        
+
         let champName = "champName";
         let championId = game.participants[partId - 1].championId;
-        champName = ChampionIdToName(championId,"gameSettingInfos"+ game._id); //ON VERRA PLUS TARD
+        champName = ChampionIdToName(championId, "gameSettingInfos" + game._id); //ON VERRA PLUS TARD
 
 
         //e colonne summoner Stats (KDA, multiKill, sbires...)
@@ -206,7 +226,7 @@ function displayGameHistory(games, name) {
         //dernière colonne team 200
         teams.append(team200);
 
-        let content = [gameStats,gameSettingInfos, summonerStats, teams];
+        let content = [gameStats, gameSettingInfos, summonerStats, teams];
         let gameContent = $("<div/>", { id: "gameContent" + game._id, class: "gameContent", html: content });
         gameContent.addClass(result); // set la Class Win ou Fail
         $("#gameHistory").append(gameContent)

@@ -54,15 +54,14 @@
                         <% teamSize= in_game.participants.length/2
                         for (let i = 0; i < teamSize; i++) {%>
                             <tr>
-                                <td id= "champion"> </td>
-                                <td> <%=in_game.participants[i].spell1Id%> </td>
+                                <td id= "champion<%=i%>"> 
+                                    <p class="champName"></p>
+                                </td>
+                                <td> <%=in_game.participants[i].spell1Id%> 
+                                </td>
                                 <td> <%=in_game.participants[i].spell2Id%> </td>
                                 <td> <%=in_game.participants[i].perks.perkIds[0]%> </td>
                                 <td> <%=in_game.participants[i].summonerName%> </td>
-                                <script> 
-                                    name = ChampionIdToName(<%=in_game.participants[i].championId%>)
-                                    document.getElementById('champion').innerHTML = '<img class="profileIcon" src="https://ddragon.leagueoflegends.com/cdn/10.23.1/img/champion/'+ name +'.png">'
-                                </script>
                             </tr>
                         <%}%>
                     </tr>
