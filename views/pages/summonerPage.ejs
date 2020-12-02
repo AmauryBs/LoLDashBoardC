@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="/css/summonerPage.css">
 </head>
 
-<% if (locals.in_game) { %>
+<% if (locals.in_game && locals.in_game.participants) { %>
 
 <body class="container-fluid" onload="startTime()">
     <% }else{%>
@@ -26,7 +26,7 @@
         <main>
 
             <div class="jumbotron">
-                <% if (locals.in_game) { %>
+                <% if (locals.in_game && locals.in_game.participants) { %>
                 <script>
                     function startTime() {
                         var today = new Date();
@@ -84,131 +84,135 @@
                                             </div>
                                         </td>
                                         <% teamSize= in_game.participants.length/2
-                                        for (let i = 0; i < teamSize; i++) {%>
-                                            <tr>
-                                                <td> <%=in_game.participants[i].summonerName%> </td>
-                                                <td> <%=in_game.participants[teamSize + i].summonerName%> </td>
-                                            </tr>
-                                        <%}%>
+                                            for (let i = 0; i < teamSize; i++) {%>
+                                    <tr>
+                                        <td> <%=in_game.participants[i].summonerName%> </td>
+                                        <td> <%=in_game.participants[teamSize + i].summonerName%> </td>
                                     </tr>
-                                </tbody>
-                            </table>
+                                    <%}%>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                    </div>
                 <% } %>
 
-                <% if (locals) { %>
-                <section class="container-fluid account">
-                    
-                    <div class="row" >
-                        <div class="col-auto" id="colleftleft">
-                            <img class="profileIcon" src="http://ddragon.leagueoflegends.com/cdn/10.23.1/img/profileicon/<%=profileIconId %>.png">
-                            <span class="lvl">&nbsp;&nbsp;<b><%=summonerLevel%></b>&nbsp;&nbsp;</span>
-                        </div>
-                        <div class="col-auto " id="colleftmiddle">
-                            <p>Summoner name : </p>
-                            <span id="summonerName"><%=name %></span>
+                                    <% if (locals) { %>
+                                    <section class="container-fluid account">
 
-                        </div>
-                        <div class="col"  id="colcenter">
-                            <span class="centerButtons ">
-                                <button type="button" class="btn btn-dark">Dark</button>
-                                <button type="button" class="btn btn-dark">Dark</button>
-                                <button type="button" class="btn btn-dark">Dark</button>
-                                <button type="button" class="btn btn-dark">Dark</button>
-                            </span>
-                        </div>
-                        <div class="col-auto" id="colright">
-                            <button id="updateButton" type="button" class="btn btn-dark updateButton" value=<%=accountId%>>UPDATE</button>
-                        </div>
-                    </div>
-                </section>
-                 <% } %>
+                                        <div class="row">
+                                            <div class="col-auto" id="colleftleft">
+                                                <img class="profileIcon"
+                                                    src="http://ddragon.leagueoflegends.com/cdn/10.23.1/img/profileicon/<%=profileIconId %>.png">
+                                                <span
+                                                    class="lvl">&nbsp;&nbsp;<b><%=summonerLevel%></b>&nbsp;&nbsp;</span>
+                                            </div>
+                                            <div class="col-auto " id="colleftmiddle">
+                                                <p>Summoner name : </p>
+                                                <span id="summonerName"><%=name %></span>
 
-
-                <section class="container-fluid">
-                    <div class="row">
-                        <div class="col border border-dark">
-                            <article class="border-bottom border-dark">
-                                <div>
-                                    <% if (locals.ranked[0] && Object.keys(locals.ranked[0]).length !== 0 ) { %>
-                                        <%=ranked[0].queueType.replace("_", " ")%>
-                                    
-                                        <table class="table table-bordered table-striped">
-                                            <tbody id="ranked1">
-                                                <tr>
-                                                    <td>hotstreak</td>
-                                                    <td><%=ranked[0].hotStreak%>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>wins</td>
-                                                    <td><%=ranked[0].wins%></td>
-                                                </tr>
-                                                <tr>
-                                                    <td>losses</td>
-                                                    <td><%=ranked[0].losses%></td>
-                                                </tr>
-                                                <tr>
-                                                    <td>rank</td>
-                                                    <td><%= ranked[0].tier%>
-                                                        <%=ranked[0].rank%> :
-                                                        <%=ranked[0].leaguePoints%> lp
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                </div>
-                                <div>
-
-                                    <% if (locals.ranked[1] && Object.keys(locals.ranked[1]).length !== 0  ) { %>
-                                    <%=ranked[1].queueType.replace("_", " ")%>
-                                    <table class="table table-bordered table-striped">
-                                        <tbody id="ranked2">
-                                            <tr>
-                                                <td>hotstreak</td>
-                                                <td><%=ranked[1].hotStreak%></td>
-                                            </tr>
-                                            <tr>
-                                                <td>wins</td>
-                                                <td><%=ranked[1].wins%></td>
-                                            </tr>
-                                            <tr>
-                                                <td>losses</td>
-                                                <td><%=ranked[1].losses%></td>
-                                            </tr>
-                                            <tr>
-                                                <td>rank</td>
-                                                <td><%= ranked[1].tier%>
-                                                    <%=ranked[1].rank%> :
-                                                    <%=ranked[1].leaguePoints%>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
+                                            </div>
+                                            <div class="col" id="colcenter">
+                                                <span class="centerButtons ">
+                                                    <button type="button" class="btn btn-dark">Dark</button>
+                                                    <button type="button" class="btn btn-dark">Dark</button>
+                                                    <button type="button" class="btn btn-dark">Dark</button>
+                                                    <button type="button" class="btn btn-dark">Dark</button>
+                                                </span>
+                                            </div>
+                                            <div class="col-auto" id="colright">
+                                                <button id="updateButton" type="button"
+                                                    class="btn btn-dark updateButton"
+                                                    value=<%=accountId%>>Update</button>
+                                            </div>
+                                        </div>
+                                    </section>
                                     <% } %>
-                                </div>
-                                <% } %>
-                            </article>
-                            <article>
-                                <p>Les joueurs avec qui il a le plus joué</p>
-                            </article>
 
 
-                        </div>
-                        <div id="gameHistory" class="col-auto border border-dark">
-                            <script>
-                                let accName = '<%=name%>';
-                                accName.toString();
-                                loadGame(accName); 
+                                    <section class="container-fluid">
+                                        <div class="row">
+                                            <div class="col border border-dark">
+                                                <article class="border-bottom border-dark">
+                                                    <div>
+                                                        <% if (locals.ranked[0] && Object.keys(locals.ranked[0]).length !== 0 ) { %>
+                                                        <%=ranked[0].queueType.replace("_", " ")%>
 
-                            </script>
-                        </div>
-                        <div class="col border border-dark">
-                            <p>Les champions avec qui il a le plus joué</p>
-                        </div>
-                    </div>
-                </section>
+                                                        <table class="table table-bordered table-striped">
+                                                            <tbody id="ranked1">
+                                                                <tr>
+                                                                    <td>hotstreak</td>
+                                                                    <td><%=ranked[0].hotStreak%>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>wins</td>
+                                                                    <td><%=ranked[0].wins%></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>losses</td>
+                                                                    <td><%=ranked[0].losses%></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>rank</td>
+                                                                    <td><%= ranked[0].tier%>
+                                                                        <%=ranked[0].rank%> :
+                                                                        <%=ranked[0].leaguePoints%> lp
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                    <div>
+
+                                                        <% if (locals.ranked[1] && Object.keys(locals.ranked[1]).length !== 0  ) { %>
+                                                        <%=ranked[1].queueType.replace("_", " ")%>
+                                                        <table class="table table-bordered table-striped">
+                                                            <tbody id="ranked2">
+                                                                <tr>
+                                                                    <td>hotstreak</td>
+                                                                    <td><%=ranked[1].hotStreak%></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>wins</td>
+                                                                    <td><%=ranked[1].wins%></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>losses</td>
+                                                                    <td><%=ranked[1].losses%></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td>rank</td>
+                                                                    <td><%= ranked[1].tier%>
+                                                                        <%=ranked[1].rank%> :
+                                                                        <%=ranked[1].leaguePoints%>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                        <% } %>
+                                                    </div>
+                                                    <% } %>
+                                                </article>
+                                                <article>
+                                                    <p>Les joueurs avec qui il a le plus joué</p>
+                                                </article>
+
+
+                                            </div>
+                                            <div id="gameHistory" class="col-auto border border-dark">
+                                                <script>
+                                                    let accName = '<%=name%>';
+                                                    accName.toString();
+                                                    loadGame(accName);
+
+                                                </script>
+                                            </div>
+                                            <div class="col border border-dark">
+                                                <p>Les champions avec qui il a le plus joué</p>
+                                            </div>
+                                        </div>
+                                    </section>
         </main>
 
         <footer>

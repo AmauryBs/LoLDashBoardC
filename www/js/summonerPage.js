@@ -15,7 +15,7 @@ $(document).ready(function () {
 
     $("#updateButton").on("click", function () {
         let accId = $(this).val();
-        console.log("Loading 10 games");
+        //console.log("Loading 10 games");
         updateGame(accId, 10);
     });
 
@@ -60,7 +60,7 @@ function updateGame(accID, endIndex) {
     });
 }
 
-function ChampionIdToName(championID, CSSclass, nameImg="") {
+function ChampionIdToName(championID, CSSid, nameImg="") {
 
     $.ajax({
         url: "/ChampionIdToName",
@@ -70,31 +70,30 @@ function ChampionIdToName(championID, CSSclass, nameImg="") {
         dataType: 'JSON'
     }).done(function (champName) {
         if (nameImg == 'name')
-            displayChampName(champName, CSSclass);
+            displayChampName(champName, CSSid);
         else if (nameImg == 'img')
-            displayChampImg(champName, CSSclass);
+            displayChampImg(champName, CSSid);
 
         else {
-            displayChampName(champName, CSSclass);
-            displayChampImg(champName, CSSclass);
+            displayChampName(champName, CSSid);
+            displayChampImg(champName, CSSid);
         }
 
     });
 }
 
-function displayChampName(champName, CSSclass) {
-    $('#' + CSSclass + ' .champName').html(champName);
-    $('#' + CSSclass + ' .champImg').attr("src", "http://ddragon.leagueoflegends.com/cdn/10.24.1/img/champion/" + champName + ".png");
+function displayChampName(champName, CSSid) {
+    $('#' + CSSid + ' .champName').html(champName);
 }
 
-function displayChampImg(champName, CSSclass) {
-    $('#' + CSSclass + ' .champImg').attr("src", "http://ddragon.leagueoflegends.com/cdn/10.24.1/img/champion/" + champName + ".png");
+function displayChampImg(champName, CSSid) {
+    $('#' + CSSid + ' .champImg').attr("src", "http://ddragon.leagueoflegends.com/cdn/10.24.1/img/champion/" + champName + ".png");
 }
 
 function displayGameHistory(games, name) {
     if (games.length < 10 && window.nbUpdate == 1) {
         window.nbUpdate = 0;
-        console.log(10 - games.length);
+        //console.log(10 - games.length);
         $("#updateButton").attr('disabled', true);
         $("#updateButton").text('Loading');
         updateGame($('#updateButton').val(), 10 - games.length);
@@ -158,7 +157,8 @@ function displayGameHistory(games, name) {
         var level = $("<div/>", { class: "champLevel", html: " Niveau " + game.participants[partId - 1].stats.champLevel });
 
         //CS on minions
-        let CSContent = $('<span/>', { class: "CS tip", html: game.participants[partId - 1].stats.totalMinionsKilled + " sbires tués" });
+        let CSByMin = game.participants[partId - 1].stats.totalMinionsKilled/(game.gameDuration/60)
+        let CSContent = $('<span/>', { class: "CS tip", html: game.participants[partId - 1].stats.totalMinionsKilled + " CS ("+Math.round(CSByMin * 100) / 100+" CS/Min)" });
         var CS = $('<div/>', { class: "CS", html: CSContent });
 
         //Teams
@@ -172,7 +172,8 @@ function displayGameHistory(games, name) {
             var a = $('<a/>', { href: "#", onclick: "document.getElementById('form" + playerName + "').submit()", html: playerName })
             //var a = $('<button/>',{type:"submit", html:playerName})
             var form = $('<form/>', { id: "form" + playerName, method: "post", action: "/summonerPage" })
-
+            let imgdivParticipants = $('<div/>');
+            form.append($('<img/>', { class: "champImg champOthers" }));
             form.append(hiddenInput);
             form.append(a);
             if (game.participants[i].teamId == 100) {
@@ -182,6 +183,9 @@ function displayGameHistory(games, name) {
             else {
                 team200.append($('<p/>', { class: "participant", html: form }));
             }
+            let champName = "champName";
+            let championId = game.participants[i].championId;
+            champName = ChampionIdToName(championId, "form" + playerName,'img');
         }
 
         //première colonne avec un article avec les stats générales de la game
@@ -209,7 +213,7 @@ function displayGameHistory(games, name) {
 
         let champName = "champName";
         let championId = game.participants[partId - 1].championId;
-        champName = ChampionIdToName(championId, "gameSettingInfos" + game._id); //ON VERRA PLUS TARD
+        champName = ChampionIdToName(championId, "gameSettingInfos" + game._id); 
 
 
         //e colonne summoner Stats (KDA, multiKill, sbires...)
