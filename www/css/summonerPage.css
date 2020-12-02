@@ -65,7 +65,7 @@
 .gameContent
 {
     border: 2px solid;
-    margin : 5px 2px;
+
     display: flex;
     flex:0 0 auto;
     flex-direction: row;
@@ -81,18 +81,14 @@
 
 .gameContent article.summonerStats {
     
-
+    display: flex;
+    flex:0 0 auto;
     flex-direction: row;
 
+    padding:2px 5px;
 }
 
-.gameContent article.gameStats,.gameContent article.gameSettingInfos{
-
-    flex-direction: column;
-
-}
-
-.gameContent article div{
+.gameContent article div {
     
     padding:2px 5px;
 }
@@ -102,78 +98,6 @@
     padding:0px 0px;
     margin: 0px;
 }
-
-.Win
-{
-    background-color: #a3cfec;
-    border-color: #99b9cf;
-}
-
-.Fail
-{
-    background-color: #e2b6b3;
-    border-color: #cea7a7;
-}
-
-
-
-.champImg {
-    border-top-left-radius: 50% 50%;
-    border-top-right-radius: 50% 50%;
-    border-bottom-right-radius: 50% 50%;
-    border-bottom-left-radius: 50% 50%;
-    padding:0;
-    width: 50px;
-    height: 50px;
-}
-
-form .champOthers {
-    border-top-left-radius: 0 0;
-    border-top-right-radius: 0 0;
-    border-bottom-right-radius: 0 0;
-    border-bottom-left-radius: 0 0;
-    padding:0;
-    width: 20px;
-    height: 20px;
-}
-
-
-
-.champion>*{
-    margin:auto;
-    text-align: center;
-}
-
-.killAchievements ul {
-    margin:0;
-    padding:0;
-    list-style-type:none;
-    text-align:center;
-}
-.killAchievements li {
-    float:left;
-    margin:auto;
-    padding:2px;
-    background-color:black;
-    color:white;
-    text-decoration:none;
-}
-
-.killAchievements ul li ul {
-    display:none;
-}
-
-.killAchievements ul li:hover ul {
-    display:block;
-}
-.killAchievements li:hover ul li {
-    float:none;
-}
-.killAchievements li ul {
-    position:absolute;
-}
-
-
 
 
 
