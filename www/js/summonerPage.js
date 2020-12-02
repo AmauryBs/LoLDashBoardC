@@ -91,8 +91,7 @@ function ChampionIdToName(championID, CSSid, nameImg="") {
         type: "POST",
         cache: false,
         data: { 'id': championID },
-        dataType: 'JSON',
-        timeout: 5
+        dataType: 'JSON'
     }).done(function (champName) {
         if (nameImg == 'name')
             displayChampName(champName, CSSid);
@@ -109,7 +108,8 @@ function ChampionIdToName(championID, CSSid, nameImg="") {
         {     
           alert('Native Promise: Failed from timeout'); 
           //do something. Try again perhaps?
-        });
+        }
+    });
 }
 
 function displayChampName(champName, CSSid) {
