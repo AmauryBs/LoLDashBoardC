@@ -1,5 +1,4 @@
 $(document).ready(function () {
-
     window.nbUpdate = 1;
     /*
     Adapt position of buttons with the window width
@@ -30,7 +29,6 @@ $(document).ready(function () {
 });
 
 function loadGame(name) {
-
     /** 
      * get 10 games from the loadgame route
      * then exec displayGameHistory(games, name);
@@ -70,7 +68,6 @@ function updateGame(accID, endIndex) {
         dataType: 'JSON'
     }).done(function () {
         console.log("done");
-
         loadGame($("#summonerName").html());
 
     });
@@ -147,7 +144,6 @@ function redirectOnOtherSummoner(name) {
         dataType: 'JSON'
     });
 }
-
 function displayGameHistory(games, name) {
     /** 
      * Big function to display all data from games
@@ -242,6 +238,7 @@ function displayGameHistory(games, name) {
             form.append(a);
 
             if (game.participants[i].teamId == 100) {
+
                 team100.append($('<p/>', { class: "participant", html: form }));
             }
             else {
@@ -321,5 +318,4 @@ function secondsToHms(d) {
     }
     return hDisplay.toString() + mDisplay.toString() + sDisplay.toString();
 }
-
 

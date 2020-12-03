@@ -13,10 +13,8 @@
 </head>
 
 <% if (locals.in_game) { %>
-
 <body class="container-fluid" onload="startTime()">
     <% }else{%>
-
     <body class="container-fluid">
         <%}%>
 <header>
@@ -27,87 +25,19 @@
 
             <div class="jumbotron">
                 <% if (locals.in_game) { %>
-                <script>
-                    function startTime() {
-                        var today = new Date();
-                        var difference = today - new Date(<%=in_game.gameStartTime %>)
-                        var hd = Math.floor(difference / 1000 / 60 / 60);
-                        difference -= hd * 1000 * 60 * 60
-
-                        var md = Math.floor(difference / 1000 / 60);
-                        difference -= md * 1000 * 60
-
-                        var sd = Math.floor(difference / 1000);
-
-
-                        var h = today.getHours();
-                        var m = today.getMinutes();
-                        var s = today.getSeconds();
-                        md = checkTime(md);
-                        sd = checkTime(sd);
-                        timer = md + ":" + sd;
-                        if (hd > 0) {
-                            timer = hd + ":" + md + ":" + sd;
-                        }
-                        document.getElementById("gamelength").innerHTML = timer
-                        var t = setTimeout(startTime, 500);
-                    }
-                    function checkTime(i) {
-                        if (i < 10) { i = "0" + i };  // add zero in front of numbers < 10
-                        return i;
-                    }
-                </script>
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h4 class="panel-title"></h4>
-                        <a data-toggle="collapse" href="#collapseInGame">in game</a>
-                        </h4>
-                    </div>
-                    <div id="collapseInGame" class="panel-collapse collapse">
-                        <div class="panel-body">
-                            <table class="table table-bordered table-striped">
-                                <tbody id="in_game">
-                                    <tr>
-
-                                        <td colspan=2> &nbsp;<div class="inlineP" id='gamelength'></div> &nbsp; | &nbsp;
-                                            <%= in_game.gameQueueConfigId%></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="color-change">
-                                            <div class="Blue">
-                                                &nbsp;&nbsp; Blue
-                                            </div>
-                                        </td>
-                                        <td class="color-change">
-                                            <div class="Red">
-                                                &nbsp;&nbsp; Red
-                                            </div>
-                                        </td>
-                                        <% teamSize= in_game.participants.length/2
-                                        for (let i = 0; i < teamSize; i++) {%>
-                                            <tr>
-                                                <td> <%=in_game.participants[i].summonerName%> </td>
-                                                <td> <%=in_game.participants[teamSize + i].summonerName%> </td>
-                                            </tr>
-                                        <%}%>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                    <%- include ("inGame.ejs") %>
                 <% } %>
 
-                <% if (locals.account) { %>
                 <section class="container-fluid account">
                     
                     <div class="row" >
                         <div class="col-auto" id="colleftleft">
-                            <img class="profileIcon" src="http://ddragon.leagueoflegends.com/cdn/10.19.1/img/profileicon/<%= account.profileIconId %>.png">
-                            <span class="lvl">&nbsp;&nbsp;<b><%= account.summonerLevel%></b>&nbsp;&nbsp;</span>
+                            <img class="profileIcon" src="http://ddragon.leagueoflegends.com/cdn/10.23.1/img/profileicon/<%= profileIconId %>.png">
+                            <span class="lvl">&nbsp;&nbsp;<b><%= summonerLevel%></b>&nbsp;&nbsp;</span>
                         </div>
                         <div class="col-auto " id="colleftmiddle">
                             <p>Summoner name : </p>
-                            <%= account.name %>
+                            <%= name %>
 
                         </div>
                         <div class="col"  id="colcenter">
@@ -119,11 +49,11 @@
                             </span>
                         </div>
                         <div class="col-auto" id="colright">
-                            <button type="button" class="btn btn-dark updateButton">UPDATE</button>
+                            <button type="button" class="btn btn-dark updateButton" value="<%=accountId%>">UPDATE</button>
                         </div>
                     </div>
                 </section>
-                 <% } %>
+
 
 
                 <section class="container-fluid">
@@ -160,7 +90,6 @@
                                         </table>
                                 </div>
                                 <div>
-
                                     <% if (locals.ranked[1] && Object.keys(locals.ranked[1]).length !== 0  ) { %>
                                     <%=ranked[1].queueType.replace("_", " ")%>
                                     <table class="table table-bordered table-striped">
@@ -198,10 +127,9 @@
                         </div>
                         <div id="gameHistory" class="col-auto border border-dark">
                             <script>
-                                let accName = '<%=account.name%>';
+                                let accName = '<%=name%>';
                                 accName.toString();
                                 loadHistory(accName); 
-
                             </script>
                         </div>
                         <div class="col border border-dark">

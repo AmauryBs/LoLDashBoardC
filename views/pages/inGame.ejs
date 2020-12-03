@@ -1,0 +1,98 @@
+
+
+<script type="text/javascript" src="../../js/summonerPage.js"></script>
+<script type="text/javascript" src="../../js/inGame.js"></script>
+
+<% if (locals.in_game) { %>
+<script>
+    function startTime() {
+        var today = new Date();
+        var difference = today - new Date(<%=in_game.gameStartTime %>)
+        var hd = Math.floor(difference / 1000 / 60 / 60);
+        difference -= hd * 1000 * 60 * 60
+        var md = Math.floor(difference / 1000 / 60);
+        difference -= md * 1000 * 60
+        var sd = Math.floor(difference / 1000);
+        var h = today.getHours();
+        var m = today.getMinutes();
+        var s = today.getSeconds();
+        md = checkTime(md);
+        sd = checkTime(sd);
+        timer = md + ":" + sd;
+        if (hd > 0) {
+            timer = hd + ":" + md + ":" + sd;
+        }
+        document.getElementById("gamelength").innerHTML = timer
+        var t = setTimeout(startTime, 500);
+    }
+    function checkTime(i) {
+        if (i < 10) { i = "0" + i };  // add zero in front of numbers < 10
+        return i;
+    }
+</script>
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h4 class="panel-title"></h4>
+        <a data-toggle="collapse" href="#collapseInGame">in game</a>
+        </h4>
+    </div>
+    <div id="collapseInGame" class="panel-collapse collapse">
+        <div class="panel-body">
+            <table class="table table-bordered table-striped">
+                <tbody id="in_game">
+                    <tr>
+                        <td colspan=5> &nbsp;<div class="inlineP" id='gamelength'></div> &nbsp; | &nbsp;
+                            <%= in_game.gameQueueConfigId%></td>
+                            
+                    </tr>
+                   
+                        <td colspan=5 class="color-change">
+                            <div class="Blue">
+                                &nbsp;&nbsp; Blue
+                            </div>
+                        </td>
+                        
+                        <% teamSize= in_game.participants.length/2
+                        for (let i = 0; i < teamSize; i++) {%>
+                            <tr>
+                                <td id = "name<%=i%>"> </td>
+                                <td id= "champion<%=i%>"> 
+                                    <p class="champName"></p>
+                                </td>
+                                <td id = "spell<%=i%>"></td>  
+                                <script>
+                                    linkPlayer("<%=in_game.participants[i].summonerName%>", "name<%=i%>")
+                                    fetchFromJson("/json/spell.json",<%=in_game.participants[i].spell1Id%>,"spell"+<%=i%>)
+                                    fetchFromJson("/json/spell.json",<%=in_game.participants[i].spell2Id%>,"spell"+<%=i%>)
+                                </script>
+                            </tr>
+                        <%}%>
+                    </tr>
+                    <tr>
+                        <td  colspan=5 class="color-change">
+                            <div class="Red">
+                                &nbsp;&nbsp; Red
+                            </div>
+                            <% for (let i = 0; i < teamSize; i++) {%>
+                                <tr>
+                                    <td id = "name<%=teamSize+i%>"> </td>
+                                    <td id= "champion<%=teamSize+i%>"> 
+                                        <p class="champName"></p>
+                                    </td>
+                                    <td id = "spell<%=teamSize+i%>"></td>  
+                                    <script>
+                                        linkPlayer("<%=in_game.participants[teamSize+i].summonerName%>", "name<%=teamSize+i%>")
+                                        fetchFromJson("/json/spell.json",<%=in_game.participants[teamSize+i].spell1Id%>,"spell"+<%=teamSize+i%>)
+                                        fetchFromJson("/json/spell.json",<%=in_game.participants[teamSize+i].spell2Id%>,"spell"+<%=teamSize+i%>)
+                                    </script>
+                                </tr>
+                            <%}%>
+                        </td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<% } %>
