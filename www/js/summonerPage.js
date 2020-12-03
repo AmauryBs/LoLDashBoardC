@@ -1,4 +1,5 @@
 $(document).ready(function () {
+
     window.nbUpdate = 1;
     /*
     Adapt position of buttons with the window width
@@ -19,7 +20,7 @@ $(document).ready(function () {
     //update when click on update Button
     $("#updateButton").on("click", function () {
         let accId = $(this).val();
-        //console.log("Loading 10 games");
+        console.log("Loading 10 games");
         updateGame(accId, 10);
     });
 
@@ -29,11 +30,14 @@ $(document).ready(function () {
 });
 
 function loadGame(name) {
+
     /** 
      * get 10 games from the loadgame route
      * then exec displayGameHistory(games, name);
      * params : name of player
      * */ 
+
+    console.log(name);
     $.ajax({
         url: "/loadGame",
         type: "POST",
@@ -41,7 +45,7 @@ function loadGame(name) {
         data: { 'name': name, 'queueId': -1, 'endIndex': 10 },
         dataType: 'JSON'
     }).done(function (games, name) {
-        //console.log(games);
+        console.log(games);
         displayGameHistory(games, name);
         $("#updateButton").attr('disabled', false);
         $("#updateButton").text('Update');
@@ -57,6 +61,8 @@ function updateGame(accID, endIndex) {
      * accID : account ID of player
      * endIndex : nb of games
      * */ 
+    console.log(accID);
+    console.log(endIndex);
     $("#updateButton").attr('disabled', true);
     $("#updateButton").text('Loading');
 
@@ -68,6 +74,7 @@ function updateGame(accID, endIndex) {
         dataType: 'JSON'
     }).done(function () {
         console.log("done");
+
         loadGame($("#summonerName").html());
 
     });
@@ -144,6 +151,7 @@ function redirectOnOtherSummoner(name) {
         dataType: 'JSON'
     });
 }
+
 function displayGameHistory(games, name) {
     /** 
      * Big function to display all data from games
@@ -152,14 +160,16 @@ function displayGameHistory(games, name) {
      * name : name of the summoner
      * */ 
 
+    $("#updateButton").attr('disabled', true);
+    $("#updateButton").text('Loading');
+
     if (games.length < 10 && window.nbUpdate == 1) {
         //if the number of games of the player is not enough => update auto
         window.nbUpdate = 0;// setting at 0 to not update if page reloading
-        //console.log(10 - games.length);
+        console.log(10 - games.length);
 
         //change update Button caracteristic to disable click capabilitie
-        $("#updateButton").attr('disabled', true);
-        $("#updateButton").text('Loading');
+        
         updateGame($('#updateButton').val(), 10 - games.length);// call updateGame
     }
     games.forEach(game => {
@@ -238,7 +248,6 @@ function displayGameHistory(games, name) {
             form.append(a);
 
             if (game.participants[i].teamId == 100) {
-
                 team100.append($('<p/>', { class: "participant", html: form }));
             }
             else {
@@ -296,6 +305,8 @@ function displayGameHistory(games, name) {
         let gameContent = $("<div/>", { id: "gameContent" + game._id, class: "gameContent", html: content });
         gameContent.addClass(result); // set  Class Win or Fail
         $("#gameHistory").append(gameContent)
+        $("#updateButton").attr('disabled', false);
+        $("#updateButton").text('Update');
 
     });
 
@@ -318,4 +329,5 @@ function secondsToHms(d) {
     }
     return hDisplay.toString() + mDisplay.toString() + sDisplay.toString();
 }
+
 
