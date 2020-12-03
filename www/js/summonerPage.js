@@ -191,10 +191,14 @@ function displayGameHistory(games, name) {
 
         let result = "Win";
         if (game.teams[0].teamId == sumTeamId) {
-            result = game.teams[0].win;
+            if(game.teams[0].win == 'Fail'){
+                result = 'Lose';
+            }
         }
         else {
-            result = game.teams[1].win;
+            if(game.teams[1].win == 'Fail'){
+                result = 'Lose';
+            }
         }
 
         //game time
@@ -304,6 +308,7 @@ function displayGameHistory(games, name) {
         let content = [gameStats, gameSettingInfos, summonerStats, teams];
         let gameContent = $("<div/>", { id: "gameContent" + game._id, class: "gameContent", html: content });
         gameContent.addClass(result); // set  Class Win or Fail
+        console.log(result)
         $("#gameHistory").append(gameContent)
         $("#updateButton").attr('disabled', false);
         $("#updateButton").text('Update');
